@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component id="http://mmt.inf.tu-dresden.de/EDYRA/prototype/EventComponent" name="EventComponent" version="1.0" isUI="true"
+	xmlns:nfp="http://mmt.inf.tu-dresden.de/models/nfp.owl#" xmlns:mcdl="http://mmt.inf.tu-dresden.de/models/mcdl.owl#" xmlns:travel="http://mmt.inf.tu-dresden.de/cruise/travel.owl#"
+	xmlns:upperactions="http://mmt.inf.tu-dresden.de/models/activity-actions.owl#" xmlns:edyraactions="http://mmt.inf.tu-dresden.de/models/activity-edyraactions.owl#"
+	xmlns="http://mmt.inf.tu-dresden.de/smcdl/1.15">
+	<capability id="cap01" activity="upperactions:Sort" entity="travel:Person" />
+	<capability id="cap02" activity="upperactions:Sort" entity="travel:Route" />
+	<capability id="cap03" activity="upperactions:Filter" entity="travel:Person" />
+	<capability id="cap04" activity="upperactions:Filter" entity="travel:Route" />
+	<capability id="cap06" activity="upperactions:Select" entity="travel:Route" />
+	<capability id="cap07" activity="upperactions:Select" entity="travel:Person" />
+	<capability id="cap08" activity="upperactions:Edit" entity="travel:Event" />
+	<metadata xmlns="http://mmt.inf.tu-dresden.de/smcdl/1.15/metadata">
+		<keywords>
+			<keyword>event</keyword>
+			<keyword>creation</keyword>
+			<keyword>manipulation</keyword>
+		</keywords>
+		<contactInformation>
+			<maintainer>
+				<name>Gregor Blichmann</name>
+				<email>gregor.blichmann@tu-dresden.de</email>
+				<webURL>http://www.mmt.inf.tu-dresden.de/Team/mitarbeiter.xhtml?id=353</webURL>
+				<phone>+49 351 463-38791</phone>
+			</maintainer>
+		</contactInformation>
+		<documentation>This UI component allows for creating and editing events.</documentation>
+		<pricing>
+			<absolutePrice currency="nfp:EUR" value="0.00" />
+		</pricing>
+		<energy consumption="nfp:Low" />
+		<screenshots>
+			<screenshot url="http://mashup.mmt.inf.tu-dresden.de:7331/res/1.12/components/UI_EventEditor/EventEditor_Screenshot.png">
+				<documentation>screenshot</documentation>
+			</screenshot>
+		</screenshots>
+		<icons>
+			<icon url="http://mashup.mmt.inf.tu-dresden.de:7331/res/1.12/components/UI_EventEditor/EventEditor_Icon.png">
+				<documentation>icon</documentation>
+			</icon>
+		</icons>
+		<dimensions>
+			<min width="470" height="425" />
+			<max width="470" height="425" />
+		</dimensions>
+	</metadata>
+	<requirements>
+		<runtimes>
+			<runtime id="TSR" version=">=1.8" />
+		</runtimes>
+	</requirements>
+	<interface>
+		<property type="mcdl:hasTitle" required="true" name="title">
+			<default>Edit Events</default>
+		</property>
+		<property type="mcdl:hasWidth" required="true" name="width">
+			<default>475</default>
+		</property>
+		<property type="mcdl:hasHeight" required="true" name="height">
+			<default>425</default>
+		</property>
+		<property type="travel:Event" required="false" name="currentEvent" />
+		<event name="eventReady">
+			<parameter type="travel:Event" name="event" />
+		</event>
+		<event name="showRoute">
+			<parameter type="travel:Route" name="route" />
+		</event>
+		<event name="contactRequired">
+			<parameter type="travel:Person" name="person" />
+		</event>
+		<event name="needActualContactInformation">
+			<parameter type="travel:Email" name="email" />
+		</event>
+		<operation name="setEvent">
+			<capability id="cap09" activity="upperactions:Create" entity="travel:Event" />
+			<parameter type="travel:Event" name="event" />
+		</operation>
+		<operation name="setLocation">
+			<capability id="cap10" activity="edyraactions:Add" entity="travel:Location" />
+			<parameter type="travel:Location" name="location" />
+		</operation>
+		<operation name="setRoutes">
+			<capability id="cap12" activity="edyraactions:Add" entity="travel:Route" />
+			<parameter type="travel:Route" isCollection="true" name="routes" />
+		</operation>
+		<operation name="setPersons">
+			<capability id="cap14" activity="edyraactions:Add" entity="travel:Person" />
+			<parameter type="travel:Person" isCollection="true" name="persons" />
+		</operation>
+		<!-- TODO more generic interface (travel:Event) as soon as full mediation supported -->
+		<dragSource name="dndEvent">
+			<parameter name="event" type="travel:Location" />
+		</dragSource>
+	</interface>
+	<binding bindingtype="mapping_simplewrapper">
+		<dependencies>
+			<dependency language="css">
+				<url>http://extjs-public.googlecode.com/svn/tags/extjs-3.4.0/release/resources/css/ext-all.css</url>
+			</dependency>
+			<dependency language="javascript">
+				<url>http://extjs-public.googlecode.com/svn/tags/extjs-3.4.0/release/adapter/ext/ext-base.js</url>
+			</dependency>
+			<dependency language="javascript">
+				<url>http://extjs-public.googlecode.com/svn/tags/extjs-3.4.0/release/ext-all.js</url>
+			</dependency>
+			<dependency language="javascript">
+				<url>http://mashup.mmt.inf.tu-dresden.de:7331/res/1.9/edyra/js/ensible/extensible-all.js</url>
+			</dependency>
+			<dependency language="javascript">
+				<url>http://mashup.mmt.inf.tu-dresden.de:7331/res/1.10/components/UI_EventEditor/LocationField.js</url>
+			</dependency>
+			<dependency language="javascript">
+				<url>http://mashup.mmt.inf.tu-dresden.de:7331/res/1.12/components/UI_EventEditor/EventEditor.js</url>
+			</dependency>
+		</dependencies>
+		<constructor>
+			<code>new EDYRA.components.EventComponent();</code>
+		</constructor>
+	</binding>
+</component>
