@@ -12,6 +12,8 @@ GraphView = function() {
 	var serviceAccess= null;
 	var xmlUtils= null;
 	var appControl= null;
+	// gettter/setter props
+	var naiveProps = "width height title".split(' ')
 
 	/**
 	 * The initialization method of the component.
@@ -49,7 +51,7 @@ GraphView = function() {
 			msg.appendToBody('parameter1AsDeclaredInMCDL', '<test/>');
 			msg.appendToBody('parameter2AsDeclaredInMCDL', '<test2>Hello World!</test2>');
 	        proxy.publish(msg);
-		*/
+		//*/
 	};
 	
 	/**
@@ -57,7 +59,9 @@ GraphView = function() {
 	 * @function
 	 */
 	this.show = function() {
-		//TODO: auto-generated method stub
+		var text = document.createTextNode("Hello World!");
+		var div = document.getElementById(this.renderTargetId);
+		div.appendChild(text);
 	};
 	
 	/**
@@ -109,14 +113,10 @@ GraphView = function() {
 	 * @param {String} propValue the value to be set
 	 */
 	this.setProperty = function(propName, propValue) {
-		if (propName == 'height') {
-			//TODO: set the property height of type '{http://mmt.inf.tu-dresden.de/models/mcdl.owl#}hasHeight'
-		}
-		if (propName == 'width') {
-			//TODO: set the property width of type '{http://mmt.inf.tu-dresden.de/models/mcdl.owl#}hasWidth'
-		}
-		if (propName == 'title') {
-			//TODO: set the property title of type '{http://mmt.inf.tu-dresden.de/models/mcdl.owl#}hasTitle'
+		if (naiveProps.indexOf(propName) != -1) {
+			this[propName] = propValue
+		} else {
+			console.warn(propName + ' not defined')
 		}
 	};
 	
@@ -127,18 +127,10 @@ GraphView = function() {
 	 * @return {String} the property value
 	 */
 	this.getProperty = function(propName) {
-		if (propName == 'height') {
-			//TODO: return the property 'height' of type '{http://mmt.inf.tu-dresden.de/models/mcdl.owl#}hasHeight'
-			return null;
+		if (naiveProps.indexOf(propName) != -1) {
+			return this[propName]
 		}
-		if (propName == 'width') {
-			//TODO: return the property 'width' of type '{http://mmt.inf.tu-dresden.de/models/mcdl.owl#}hasWidth'
-			return null;
-		}
-		if (propName == 'title') {
-			//TODO: return the property 'title' of type '{http://mmt.inf.tu-dresden.de/models/mcdl.owl#}hasTitle'
-			return null;
-		}
+		console.warn(propName + ' not defined')
 	};
 
 	/**

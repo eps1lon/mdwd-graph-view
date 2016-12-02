@@ -11,8 +11,12 @@
         </runtimes>
     </requirements>
     <interface>
-        <property xmlns:ns4="http://mmt.inf.tu-dresden.de/models/mcdl.owl#" name="height" required="true" type="ns4:hasHeight"/>
-        <property xmlns:ns4="http://mmt.inf.tu-dresden.de/models/mcdl.owl#" name="width" required="true" type="ns4:hasWidth"/>
+        <property xmlns:ns4="http://mmt.inf.tu-dresden.de/models/mcdl.owl#" name="height" required="true" type="ns4:hasHeight">
+        	<default>300</default>
+        </property>
+        <property xmlns:ns4="http://mmt.inf.tu-dresden.de/models/mcdl.owl#" name="width" required="true" type="ns4:hasWidth">
+        	<default>300</default>
+        </property>
         <property xmlns:ns4="http://mmt.inf.tu-dresden.de/models/mcdl.owl#" name="title" required="true" type="ns4:hasTitle">
             <default xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xs="http://www.w3.org/2001/XMLSchema" xsi:type="xs:string">GraphView</default>
         </property>
@@ -20,7 +24,7 @@
     <binding bindingtype="mapping_simplewrapper">
         <dependencies>
             <ns4:dependency xmlns:ns4="http://mmt.inf.tu-dresden.de/smcdl/1.15" xmlns="" language="javascript">
-                <ns4:url>http://mashup.mmt.inf.tu-dresden.de:7331/res/1.14/components/GraphView/UI_GraphView.js</ns4:url>
+                <ns4:url>http://localhost:8080/UI_GraphView/UI_GraphView.js</ns4:url>
             </ns4:dependency>
         </dependencies>
         <constructor>
