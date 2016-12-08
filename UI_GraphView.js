@@ -95,6 +95,7 @@ GraphView = function() {
 	 * 
 	 * @function
 	 */
+
 	this.dispose = function() {
 		context = null;
 		log= null;
