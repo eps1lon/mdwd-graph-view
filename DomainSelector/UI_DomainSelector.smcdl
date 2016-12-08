@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<component xmlns="http://mmt.inf.tu-dresden.de/smcdl/1.15" xmlns:ns2="http://mmt.inf.tu-dresden.de/smcdl/1.15/metadata" xmlns:ns3="de.tudresden.mmt.inf.smcdl" id="https://svn.mmt.inf.tu-dresden.de/repositories/CRUISe/components/trunk/UI_DomainSelectorTODO/" name="DomainSelector" isUI="true">
+    <ns2:metadata>
+        <ns2:keywords>
+            <ns2:keyword>DomainSelector</ns2:keyword>
+        </ns2:keywords>
+    </ns2:metadata>
+    <requirements>
+        <runtimes>
+            <runtime id="TSR" version="1.14"/>
+        </runtimes>
+    </requirements>
+    <interface>
+        <property xmlns:ns4="http://mmt.inf.tu-dresden.de/models/mcdl.owl#" name="height" required="true" type="ns4:hasHeight"/>
+        <property xmlns:ns4="http://mmt.inf.tu-dresden.de/models/mcdl.owl#" name="width" required="true" type="ns4:hasWidth"/>
+        <property xmlns:ns4="http://mmt.inf.tu-dresden.de/models/mcdl.owl#" name="title" required="true" type="ns4:hasTitle">
+            <default xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xs="http://www.w3.org/2001/XMLSchema" xsi:type="xs:string">DomainSelector</default>
+        </property>
+        <operation name="displayDomains">
+        	<parameter name="domains" type="infoapp:ConceptCluster" isCollection="true"></parameter>
+        </operation>
+        <event name="domainsSelected">
+        	<parameter name="domains" type="infoapp:ConceptCluster" isCollection="true"></parameter>
+        </event>
+    </interface>
+    <binding bindingtype="mapping_simplewrapper">
+        <dependencies>
+            <ns4:dependency xmlns:ns4="http://mmt.inf.tu-dresden.de/smcdl/1.15" xmlns="" language="javascript">
+                <ns4:url>http://mashup.mmt.inf.tu-dresden.de:7331/res/1.14/components/DomainSelector/UI_DomainSelector.js</ns4:url>
+            </ns4:dependency>
+        </dependencies>
+        <constructor>
+            <code>new DomainSelector()</code>
+        </constructor>
+    </binding>
+</component>
