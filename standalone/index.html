@@ -9,8 +9,58 @@
 		<script src="lib/domainSelector.js"></script>
 		<script src="lib/graphVisualizer.js"></script>
 		<script src="standalone.js"></script>
+		<link rel="stylesheet" type="text/css" href="css/reset.css">
+		<link rel="stylesheet" type="text/css" href="css/styleguide_friedrich.css">
+		<link rel="stylesheet" type="text/css" href="css/mashup.css">
+		<link rel="stylesheet" type="text/css" href="css/domainSelector.css">
+		<link rel="stylesheet" type="text/css" href="css/graphVisualizer.css">
 	</head>
 	<body>
-		
+		<div class="component" id="domainSelector">
+			<h1>Domänen</h1>
+			<input type="search" placeholder="Suchen...">
+			<ul id="availableDomains">
+				<li>
+					<input type="checkbox" class="domain" id="domain1"value="domain1" checked="checked">
+					<label for="domain1">Wirtschaft</label>
+				</li>
+				<li>
+					<input type="checkbox" class="domain" id="domain2" value="domain1">
+					<label for="domain2">Geographie</label>
+				</li>
+				<li>
+					<input type="checkbox" class="domain" id="domain3" value="domain1">
+					<label for="domain3">Recht</label>
+				<li>
+					<input type="checkbox" class="domain" id="domain4" value="domain1">
+					<label for="domain4">Informatik</label>
+				</li>
+				<li>
+					<input type="checkbox" class="domain" id="domain5" value="domain1">
+					<label for="domain5">KfZ</label>
+				</li>
+			</ul>
+
+
+		</div>
+		<div class="component" id="graphVis">
+			<div id="graphTools">
+				<select id="graphLayout">
+					<option value="hyper_tree" selected="selected">Hyper Hyper Tree</option>
+					<option value="tree_map">Tree Map</option>
+				</select>
+				<button id="graphFocus">F</button>
+				<button id="memberberries">M</button>
+			</div>
+
+			<canvas id="graphMinimap"></canvas>
+			<canvas id="domainGraph"></canvas>
+		</div>
+
+		<div class="component mockup" id="toolbar">Toolbar</div>
+		<div class="component mockup" id="graphHistogram">Histogram</div>
+		<div class="component mockup" id="search">Suche</div>
+		<div class="component mockup" id="detailView">Details</div>
+		<div class="component mockup" id="relevantArtifacts">Relevante Artefakte</div>
 	</body>
 </html>

@@ -1,0 +1,61 @@
+html, body {
+   height: 100%;
+}
+
+.component {
+    position: absolute;
+    border: 1px solid black;
+}
+
+.mockup {
+    text-align: center;
+}
+
+#toolbar {
+    top: 0%;
+    left: 0%;
+    height: 10%;
+    width: 99%;
+}
+
+#domainSelector {
+    top: 10%;
+    left: 0%;
+    height: 50%;
+    width: 20%;
+}
+
+#graphHistogram {
+    top: 60%;
+    left: 0%;
+    height: 39%;
+    width: 20%;
+}
+
+#search {
+    top: 10%;
+    left: 20%;
+    height: 20%;
+    width: 60%;
+}
+
+#graphVis {
+    top: 30%;
+    left: 20%;
+    height: 69%;
+    width: 60%;
+}
+
+#detailView {
+    top: 10%;
+    left: 80%;
+    height: 50%;
+    width: 19%;
+}
+
+#relevantArtifacts {
+    top: 60%;
+    left: 80%;
+    height: 39%;
+    width: 19%;
+}

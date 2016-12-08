@@ -1,0 +1,35 @@
+canvas {
+    position: absolute;
+}
+
+#domainGraph {
+    background-color: grey;
+    z-index: 0;
+    height: 100%;
+    width: 100%;
+}
+
+#graphMinimap {
+    background-color: aquamarine;
+    z-index: 1;
+    height: 30%;
+    width: 20%;
+}
+
+#graphTools {
+    position: absolute;
+    top: 5px;
+    right: 0px;
+    z-index: 2;
+}
+
+#graphLayout {
+
+}
+
+#graphFocus {
+
+}
+
+#memberberries {
+}
