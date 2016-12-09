@@ -2,10 +2,10 @@
 <html>
 	<head>
 		<title>Scaffold</title>
-		<script
-				src="https://code.jquery.com/jquery-3.1.1.min.js"
-				integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="
-				crossorigin="anonymous"></script>
+		<script src="lib/jquery-3.1.1.min.js"></script>
+		<script src="lib/jsonld.js"></script>
+		<script src="../GraphView/lib/jit.js"></script>
+
 		<script src="lib/domainSelector.js"></script>
 		<script src="lib/graphVisualizer.js"></script>
 		<script src="standalone.js"></script>
@@ -20,24 +20,12 @@
 			<h1>Domänen</h1>
 			<input type="search" placeholder="Suchen...">
 			<ul id="availableDomains">
-				<li>
-					<input type="checkbox" class="domain" id="domain1"value="domain1" checked="checked">
-					<label for="domain1">Wirtschaft</label>
+				<li class="template">
+					<input type="checkbox" class="domainCheckbox" id="templateDomain" value="templateDomain">
+					<label for="templateDomain" class="domainLabel">Template</label>
 				</li>
 				<li>
-					<input type="checkbox" class="domain" id="domain2" value="domain1">
-					<label for="domain2">Geographie</label>
-				</li>
-				<li>
-					<input type="checkbox" class="domain" id="domain3" value="domain1">
-					<label for="domain3">Recht</label>
-				<li>
-					<input type="checkbox" class="domain" id="domain4" value="domain1">
-					<label for="domain4">Informatik</label>
-				</li>
-				<li>
-					<input type="checkbox" class="domain" id="domain5" value="domain1">
-					<label for="domain5">KfZ</label>
+					StaticDomain
 				</li>
 			</ul>
 
@@ -53,8 +41,8 @@
 				<button id="memberberries">M</button>
 			</div>
 
-			<canvas id="graphMinimap"></canvas>
-			<canvas id="domainGraph"></canvas>
+			<div id="graphMinimap" class="jitCanvas"></div>
+			<div id="domainGraph" class="jitCanvas"></div>
 		</div>
 
 		<div class="component mockup" id="toolbar">Toolbar</div>
