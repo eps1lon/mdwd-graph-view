@@ -1,0 +1,605 @@
+@prefix : <http://microsoft.com/2013/northwind#> .
+@prefix ia: <http://mmt.inf.tu-dresden.de/infoapp#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix xml: <http://www.w3.org/XML/1998/namespace> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+
+<http://microsoft.com/2013/northwind> a owl:Ontology ;
+	owl:imports <http://mmt.inf.tu-dresden.de/infoapp> .
+# 
+# 
+# #################################################################
+# #
+# #    Object Properties
+# #
+# #################################################################
+# 
+# 
+# http://microsoft.com/2013/northwind#hasCustomer
+
+:hasCustomer a owl:ObjectProperty , owl:FunctionalProperty ;
+	rdfs:domain :Order ;
+	rdfs:range :Customer ;
+	ia:isFacet "true"^^xsd:boolean .
+# 
+# http://microsoft.com/2013/northwind#hasEmployee
+
+:hasEmployee a owl:ObjectProperty ;
+	rdfs:domain :Order ;
+	rdfs:range :Employee ;
+	ia:isFacet "true"^^xsd:boolean .
+# 
+# http://microsoft.com/2013/northwind#hasOrder
+
+:hasOrder a owl:ObjectProperty ;
+	owl:inverseOf :hasOrderDetails ;
+	a owl:FunctionalProperty ;
+	rdfs:domain :OrderDetails ;
+	rdfs:range :Order ;
+	ia:isFacet "true"^^xsd:boolean .
+# 
+# http://microsoft.com/2013/northwind#hasOrderDetails
+
+:hasOrderDetails a owl:ObjectProperty , owl:FunctionalProperty ;
+	rdfs:domain :Order ;
+	rdfs:range :OrderDetails ;
+	ia:isFacet "true"^^xsd:boolean .
+# 
+# http://microsoft.com/2013/northwind#hasProduct
+
+:hasProduct a owl:ObjectProperty ;
+	rdfs:domain :OrderDetails ;
+	rdfs:range :Product ;
+	ia:isFacet "true"^^xsd:boolean .
+# 
+# http://microsoft.com/2013/northwind#hasProductCategory
+
+:hasProductCategory a owl:ObjectProperty ;
+	rdfs:domain :Product ;
+	rdfs:range :ProductCategory ;
+	ia:isFacet "true"^^xsd:boolean .
+# 
+# http://microsoft.com/2013/northwind#hasRegion
+
+:hasRegion a owl:ObjectProperty ;
+	rdfs:domain _:genid1 .
+
+_:genid1 a owl:Class ;
+	owl:unionOf _:genid3 .
+
+_:genid3 a rdf:List ;
+	rdf:first :Contact ;
+	rdf:rest _:genid2 .
+
+_:genid2 a rdf:List ;
+	rdf:first :Territory ;
+	rdf:rest rdf:nil .
+
+:hasRegion rdfs:range :Region ;
+	ia:isFacet "true"^^xsd:boolean .
+# 
+# http://microsoft.com/2013/northwind#hasShippingRegion
+
+:hasShippingRegion a owl:ObjectProperty ;
+	rdfs:subPropertyOf :hasRegion ;
+	rdfs:domain :Order ;
+	rdfs:range :Region ;
+	ia:isFacet "true"^^xsd:boolean .
+# 
+# http://microsoft.com/2013/northwind#hasSupplier
+
+:hasSupplier a owl:ObjectProperty ;
+	rdfs:domain :Product ;
+	rdfs:range :Supplier ;
+	ia:isFacet "true"^^xsd:boolean .
+# 
+# http://microsoft.com/2013/northwind#hasTerritory
+
+:hasTerritory a owl:ObjectProperty ;
+	rdfs:domain :Employee ;
+	rdfs:range :Territory ;
+	ia:isFacet "true"^^xsd:boolean .
+# 
+# http://microsoft.com/2013/northwind#viaShipper
+
+:viaShipper a owl:ObjectProperty ;
+	rdfs:domain :Order ;
+	rdfs:range :Shipper ;
+	ia:isFacet "true"^^xsd:boolean .
+# 
+# 
+# 
+# #################################################################
+# #
+# #    Data properties
+# #
+# #################################################################
+# 
+# 
+# http://microsoft.com/2013/northwind#hasBirthDate
+
+:hasBirthDate a owl:DatatypeProperty , owl:FunctionalProperty ;
+	rdfs:domain :Person ;
+	rdfs:range xsd:dateTime .
+# 
+# http://microsoft.com/2013/northwind#hasCity
+
+:hasCity a owl:DatatypeProperty , owl:FunctionalProperty ;
+	rdfs:domain :Contact ;
+	rdfs:range rdfs:Literal ;
+	ia:isFacet "true"^^xsd:boolean .
+# 
+# http://microsoft.com/2013/northwind#hasCountry
+
+:hasCountry a owl:DatatypeProperty , owl:FunctionalProperty ;
+	rdfs:domain :Contact ;
+	rdfs:range rdfs:Literal ;
+	ia:isFacet "true"^^xsd:boolean .
+# 
+# http://microsoft.com/2013/northwind#hasDescription
+
+:hasDescription a owl:DatatypeProperty ;
+	rdfs:range rdfs:Literal .
+# 
+# http://microsoft.com/2013/northwind#hasFirstName
+
+:hasFirstName a owl:DatatypeProperty ;
+	rdfs:domain :Person ;
+	rdfs:range rdfs:Literal .
+# 
+# http://microsoft.com/2013/northwind#hasID
+
+:hasID a owl:DatatypeProperty , owl:FunctionalProperty ;
+	rdfs:range rdfs:Literal .
+# 
+# http://microsoft.com/2013/northwind#hasLastName
+
+:hasLastName a owl:DatatypeProperty , owl:FunctionalProperty ;
+	rdfs:domain :Person ;
+	rdfs:range rdfs:Literal .
+# 
+# http://microsoft.com/2013/northwind#hasName
+
+:hasName a owl:DatatypeProperty ;
+	rdfs:range rdfs:Literal .
+# 
+# http://microsoft.com/2013/northwind#hasOrderDate
+
+:hasOrderDate a owl:DatatypeProperty , owl:FunctionalProperty ;
+	rdfs:domain :Order ;
+	rdfs:range rdfs:Literal ;
+	ia:isFacet "false"^^xsd:boolean .
+# 
+# http://microsoft.com/2013/northwind#hasPhoneNumber
+
+:hasPhoneNumber a owl:DatatypeProperty , owl:FunctionalProperty ;
+	rdfs:domain :Contact ;
+	rdfs:range rdfs:Literal .
+# 
+# http://microsoft.com/2013/northwind#hasPicture
+
+:hasPicture a owl:DatatypeProperty ;
+	rdfs:range xsd:anyURI .
+# 
+# http://microsoft.com/2013/northwind#hasPostalCode
+
+:hasPostalCode a owl:DatatypeProperty , owl:FunctionalProperty ;
+	rdfs:domain :Contact ;
+	rdfs:range rdfs:Literal .
+# 
+# http://microsoft.com/2013/northwind#hasQuantity
+
+:hasQuantity a owl:DatatypeProperty , owl:FunctionalProperty ;
+	rdfs:domain :OrderDetails ;
+	rdfs:range xsd:integer .
+# 
+# http://microsoft.com/2013/northwind#hasShippingCity
+
+:hasShippingCity a owl:DatatypeProperty ;
+	rdfs:subPropertyOf :hasCity ;
+	a owl:FunctionalProperty ;
+	rdfs:domain :Order ;
+	rdfs:range rdfs:Literal .
+# 
+# http://microsoft.com/2013/northwind#hasShippingCountry
+
+:hasShippingCountry a owl:DatatypeProperty ;
+	rdfs:subPropertyOf :hasCountry ;
+	a owl:FunctionalProperty ;
+	rdfs:domain :Order ;
+	rdfs:range rdfs:Literal .
+# 
+# http://microsoft.com/2013/northwind#hasShippingPostalCode
+
+:hasShippingPostalCode a owl:DatatypeProperty ;
+	rdfs:subPropertyOf :hasPostalCode ;
+	a owl:FunctionalProperty ;
+	rdfs:domain :Order ;
+	rdfs:range rdfs:Literal .
+# 
+# http://microsoft.com/2013/northwind#hasStreetName
+
+:hasStreetName a owl:DatatypeProperty , owl:FunctionalProperty ;
+	rdfs:domain :Contact ;
+	rdfs:range rdfs:Literal ;
+	ia:isFacet "true"^^xsd:boolean .
+# 
+# http://microsoft.com/2013/northwind#hasStreetNumber
+
+:hasStreetNumber a owl:DatatypeProperty , owl:FunctionalProperty ;
+	rdfs:domain :Contact ;
+	rdfs:range rdfs:Literal .
+# 
+# http://microsoft.com/2013/northwind#hasTitle
+
+:hasTitle a owl:DatatypeProperty ;
+	rdfs:range rdfs:Literal .
+# 
+# http://microsoft.com/2013/northwind#hasUnitPrice
+
+:hasUnitPrice a owl:DatatypeProperty , owl:FunctionalProperty ;
+	rdfs:domain _:genid4 .
+
+_:genid4 a owl:Class ;
+	owl:unionOf _:genid6 .
+
+_:genid6 a rdf:List ;
+	rdf:first :OrderDetails ;
+	rdf:rest _:genid5 .
+
+_:genid5 a rdf:List ;
+	rdf:first :Product ;
+	rdf:rest rdf:nil .
+
+:hasUnitPrice rdfs:range xsd:double ;
+	ia:isFacet "true"^^xsd:boolean .
+# 
+# http://microsoft.com/2013/northwind#hasUnitsInOrder
+
+:hasUnitsInOrder a owl:DatatypeProperty , owl:FunctionalProperty ;
+	rdfs:domain :Product ;
+	rdfs:range xsd:integer .
+# 
+# http://microsoft.com/2013/northwind#hasUnitsInStock
+
+:hasUnitsInStock a owl:DatatypeProperty , owl:FunctionalProperty ;
+	rdfs:domain :Product ;
+	rdfs:range xsd:integer .
+# 
+# 
+# 
+# #################################################################
+# #
+# #    Classes
+# #
+# #################################################################
+# 
+# 
+# http://microsoft.com/2013/northwind#Contact
+
+:Contact a owl:Class ;
+	rdfs:subClassOf _:genid7 .
+
+_:genid7 a owl:Restriction ;
+	owl:onProperty :hasRegion ;
+	owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger ;
+	owl:onClass :Region .
+
+:Contact rdfs:subClassOf _:genid8 .
+
+_:genid8 a owl:Restriction ;
+	owl:onProperty :hasTitle ;
+	owl:minCardinality "0"^^xsd:nonNegativeInteger .
+
+:Contact rdfs:subClassOf _:genid9 .
+
+_:genid9 a owl:Restriction ;
+	owl:onProperty :hasCity ;
+	owl:cardinality "1"^^xsd:nonNegativeInteger .
+
+:Contact rdfs:subClassOf _:genid10 .
+
+_:genid10 a owl:Restriction ;
+	owl:onProperty :hasCountry ;
+	owl:cardinality "1"^^xsd:nonNegativeInteger .
+
+:Contact rdfs:subClassOf _:genid11 .
+
+_:genid11 a owl:Restriction ;
+	owl:onProperty :hasPhoneNumber ;
+	owl:cardinality "1"^^xsd:nonNegativeInteger .
+
+:Contact rdfs:subClassOf _:genid12 .
+
+_:genid12 a owl:Restriction ;
+	owl:onProperty :hasPostalCode ;
+	owl:cardinality "1"^^xsd:nonNegativeInteger .
+
+:Contact rdfs:subClassOf _:genid13 .
+
+_:genid13 a owl:Restriction ;
+	owl:onProperty :hasStreetName ;
+	owl:cardinality "1"^^xsd:nonNegativeInteger .
+
+:Contact rdfs:subClassOf _:genid14 .
+
+_:genid14 a owl:Restriction ;
+	owl:onProperty :hasStreetNumber ;
+	owl:cardinality "1"^^xsd:nonNegativeInteger .
+
+:Contact owl:disjointWith :Territory .
+# 
+# http://microsoft.com/2013/northwind#Customer
+
+:Customer a owl:Class ;
+	rdfs:subClassOf :Contact , :Person , _:genid15 .
+
+_:genid15 a owl:Restriction ;
+	owl:onProperty :hasID ;
+	owl:cardinality "1"^^xsd:nonNegativeInteger .
+# 
+# http://microsoft.com/2013/northwind#Employee
+
+:Employee a owl:Class ;
+	rdfs:subClassOf :Contact , :Person , _:genid16 .
+
+_:genid16 a owl:Restriction ;
+	owl:onProperty :hasTerritory ;
+	owl:someValuesFrom :Territory .
+
+:Employee rdfs:subClassOf _:genid17 .
+
+_:genid17 a owl:Restriction ;
+	owl:onProperty :hasID ;
+	owl:cardinality "1"^^xsd:nonNegativeInteger .
+# 
+# http://microsoft.com/2013/northwind#Order
+
+:Order a owl:Class ;
+	rdfs:subClassOf _:genid18 .
+
+_:genid18 a owl:Restriction ;
+	owl:onProperty :hasEmployee ;
+	owl:someValuesFrom :Employee .
+
+:Order rdfs:subClassOf _:genid19 .
+
+_:genid19 a owl:Restriction ;
+	owl:onProperty :hasOrderDetails ;
+	owl:someValuesFrom :OrderDetails .
+
+:Order rdfs:subClassOf _:genid20 .
+
+_:genid20 a owl:Restriction ;
+	owl:onProperty :hasCustomer ;
+	owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger ;
+	owl:onClass :Customer .
+
+:Order rdfs:subClassOf _:genid21 .
+
+_:genid21 a owl:Restriction ;
+	owl:onProperty :hasShippingRegion ;
+	owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger ;
+	owl:onClass :Region .
+
+:Order rdfs:subClassOf _:genid22 .
+
+_:genid22 a owl:Restriction ;
+	owl:onProperty :viaShipper ;
+	owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger ;
+	owl:onClass :Shipper .
+
+:Order rdfs:subClassOf _:genid23 .
+
+_:genid23 a owl:Restriction ;
+	owl:onProperty :hasID ;
+	owl:cardinality "1"^^xsd:nonNegativeInteger .
+
+:Order rdfs:subClassOf _:genid24 .
+
+_:genid24 a owl:Restriction ;
+	owl:onProperty :hasShippingCity ;
+	owl:cardinality "1"^^xsd:nonNegativeInteger .
+
+:Order rdfs:subClassOf _:genid25 .
+
+_:genid25 a owl:Restriction ;
+	owl:onProperty :hasShippingCountry ;
+	owl:cardinality "1"^^xsd:nonNegativeInteger .
+
+:Order rdfs:subClassOf _:genid26 .
+
+_:genid26 a owl:Restriction ;
+	owl:onProperty :hasShippingPostalCode ;
+	owl:cardinality "1"^^xsd:nonNegativeInteger .
+# 
+# http://microsoft.com/2013/northwind#OrderDetails
+
+:OrderDetails a owl:Class ;
+	rdfs:subClassOf _:genid27 .
+
+_:genid27 a owl:Restriction ;
+	owl:onProperty :hasOrder ;
+	owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger ;
+	owl:onClass :Order .
+
+:OrderDetails rdfs:subClassOf _:genid28 .
+
+_:genid28 a owl:Restriction ;
+	owl:onProperty :hasProduct ;
+	owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger ;
+	owl:onClass :Product .
+
+:OrderDetails rdfs:subClassOf _:genid29 .
+
+_:genid29 a owl:Restriction ;
+	owl:onProperty :hasQuantity ;
+	owl:cardinality "1"^^xsd:nonNegativeInteger .
+
+:OrderDetails rdfs:subClassOf _:genid30 .
+
+_:genid30 a owl:Restriction ;
+	owl:onProperty :hasUnitPrice ;
+	owl:cardinality "1"^^xsd:nonNegativeInteger .
+# 
+# http://microsoft.com/2013/northwind#Person
+
+:Person a owl:Class ;
+	rdfs:subClassOf _:genid31 .
+
+_:genid31 a owl:Restriction ;
+	owl:onProperty :hasTitle ;
+	owl:minCardinality "0"^^xsd:nonNegativeInteger .
+
+:Person rdfs:subClassOf _:genid32 .
+
+_:genid32 a owl:Restriction ;
+	owl:onProperty :hasBirthDate ;
+	owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger ;
+	owl:onDataRange xsd:dateTime .
+
+:Person rdfs:subClassOf _:genid33 .
+
+_:genid33 a owl:Restriction ;
+	owl:onProperty :hasFirstName ;
+	owl:cardinality "1"^^xsd:nonNegativeInteger .
+
+:Person rdfs:subClassOf _:genid34 .
+
+_:genid34 a owl:Restriction ;
+	owl:onProperty :hasLastName ;
+	owl:cardinality "1"^^xsd:nonNegativeInteger .
+# 
+# http://microsoft.com/2013/northwind#Product
+
+:Product a owl:Class ;
+	rdfs:subClassOf _:genid35 .
+
+_:genid35 a owl:Restriction ;
+	owl:onProperty :hasProductCategory ;
+	owl:someValuesFrom :ProductCategory .
+
+:Product rdfs:subClassOf _:genid36 .
+
+_:genid36 a owl:Restriction ;
+	owl:onProperty :hasSupplier ;
+	owl:someValuesFrom :Supplier .
+
+:Product rdfs:subClassOf _:genid37 .
+
+_:genid37 a owl:Restriction ;
+	owl:onProperty :hasName ;
+	owl:someValuesFrom rdfs:Literal .
+
+:Product rdfs:subClassOf _:genid38 .
+
+_:genid38 a owl:Restriction ;
+	owl:onProperty :hasID ;
+	owl:cardinality "1"^^xsd:nonNegativeInteger .
+
+:Product rdfs:subClassOf _:genid39 .
+
+_:genid39 a owl:Restriction ;
+	owl:onProperty :hasUnitPrice ;
+	owl:cardinality "1"^^xsd:nonNegativeInteger .
+
+:Product rdfs:subClassOf _:genid40 .
+
+_:genid40 a owl:Restriction ;
+	owl:onProperty :hasUnitsInOrder ;
+	owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger ;
+	owl:onDataRange xsd:integer .
+
+:Product rdfs:subClassOf _:genid41 .
+
+_:genid41 a owl:Restriction ;
+	owl:onProperty :hasUnitsInStock ;
+	owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger ;
+	owl:onDataRange xsd:integer .
+# 
+# http://microsoft.com/2013/northwind#ProductCategory
+
+:ProductCategory a owl:Class ;
+	rdfs:subClassOf _:genid42 .
+
+_:genid42 a owl:Restriction ;
+	owl:onProperty :hasDescription ;
+	owl:someValuesFrom rdfs:Literal .
+
+:ProductCategory rdfs:subClassOf _:genid43 .
+
+_:genid43 a owl:Restriction ;
+	owl:onProperty :hasPicture ;
+	owl:someValuesFrom xsd:anyURI .
+
+:ProductCategory rdfs:subClassOf _:genid44 .
+
+_:genid44 a owl:Restriction ;
+	owl:onProperty :hasID ;
+	owl:cardinality "1"^^xsd:nonNegativeInteger .
+
+:ProductCategory rdfs:subClassOf _:genid45 .
+
+_:genid45 a owl:Restriction ;
+	owl:onProperty :hasName ;
+	owl:cardinality "1"^^xsd:nonNegativeInteger .
+# 
+# http://microsoft.com/2013/northwind#Region
+
+:Region a owl:Class .
+# 
+# http://microsoft.com/2013/northwind#Shipper
+
+:Shipper a owl:Class ;
+	rdfs:subClassOf :Contact , _:genid46 .
+
+_:genid46 a owl:Restriction ;
+	owl:onProperty :hasID ;
+	owl:cardinality "1"^^xsd:nonNegativeInteger .
+# 
+# http://microsoft.com/2013/northwind#Supplier
+
+:Supplier a owl:Class ;
+	rdfs:subClassOf :Contact .
+# 
+# http://microsoft.com/2013/northwind#Territory
+
+:Territory a owl:Class ;
+	rdfs:subClassOf _:genid47 .
+
+_:genid47 a owl:Restriction ;
+	owl:onProperty :hasRegion ;
+	owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger ;
+	owl:onClass :Region .
+# 
+# 
+# 
+# #################################################################
+# #
+# #    Individuals
+# #
+# #################################################################
+# 
+# 
+# http://microsoft.com/2013/northwind#CustomerCluster
+
+:CustomerCluster a owl:NamedIndividual , ia:ConceptCluster ;
+	ia:containsConcept "http://microsoft.com/2013/northwind#Customer"^^xsd:anyURI , "http://microsoft.com/2013/northwind#Order"^^xsd:anyURI , "http://microsoft.com/2013/northwind#OrderDetails"^^xsd:anyURI ;
+	ia:hasClusterID "fdfc9ea2-554b-4805-9034-5967f03cf27e"^^xsd:string ;
+	rdfs:label "Customers"@en , "Kunden"@de .
+# 
+# http://microsoft.com/2013/northwind#SupplierCluster
+
+:SupplierCluster a owl:NamedIndividual , ia:ConceptCluster ;
+	ia:containsConcept "http://microsoft.com/2013/northwind#Product"^^xsd:anyURI , "http://microsoft.com/2013/northwind#ProductCategory"^^xsd:anyURI , "http://microsoft.com/2013/northwind#Shipper"^^xsd:anyURI , "http://microsoft.com/2013/northwind#Supplier"^^xsd:anyURI ;
+	ia:hasClusterID "c48e4b02-b81d-4061-a238-368f6a14a6c6"^^xsd:string .
+# 
+# http://microsoft.com/2013/northwind#eCommerceCluster
+
+:eCommerceCluster a owl:NamedIndividual , ia:ConceptCluster ;
+	ia:containsCluster :CustomerCluster , :SupplierCluster ;
+	ia:hasClusterID "239a1b4b-abe8-4d32-b075-8b8d7e91b49d"^^xsd:string .
+# 
+# Generated by the OWL API (version 4.2.6.20160910-2108) https://github.com/owlcs/owlapi
