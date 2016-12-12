@@ -35,14 +35,14 @@ html, body {
 #search {
     top: 10%;
     left: 20%;
-    height: 20%;
+    height: 10%;
     width: 60%;
 }
 
 #graphVis {
-    top: 30%;
+    top: 20%;
     left: 20%;
-    height: 69%;
+    height: 79%;
     width: 60%;
 }
 

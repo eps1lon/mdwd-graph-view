@@ -1,6 +1,6 @@
 (function ($window) {
 	'use strict'
-	// brower context
+    // brower context
 	var document = $window.document
 	var $ = $window.jQuery
 
@@ -9,9 +9,9 @@
 	var GraphVisualizer = $window.GraphVisualizer
 
 	$(document).ready(function () {
-		// dummy daten
+		// static daten
 		var domains = [
-			{id: 'domain1', human: 'Wirtschaft'},
+			{id: 'northwind-abox', human: 'Wirtschaft'},
             {id: 'domain2', human: 'Geographie'},
             {id: 'domain3', human: 'Recht'},
             {id: 'domain4', human: 'KfZ'}
@@ -22,12 +22,23 @@
 
         // handle communication between domainSelector and graph vis
         domain_selector.addChangeListener(function (domains) {
-            graph_vis.showGraph(domains)
+            //graph_vis.showGraph(domains)
         })
 
-		domain_selector.displayDomains(domains)
+        domain_selector.displayDomains(domains)
 
-
-	})
+        // northwind graph TODO static
+        $('#search').text('Anzeige von Objekten mit Typ x (hier Territorium) und assoziierten dokumente')
+        abox_query([{
+            "@embed": "@always",
+            "@type": "nw:Territory",
+            "ia:associatedTo": {
+                "@embed": "@always",
+                "@type": "ia:Document"
+            }
+        }]).then(graph => {
+            graph_vis.showGraph(graph)
+        })
+    })
 	
 })(this)

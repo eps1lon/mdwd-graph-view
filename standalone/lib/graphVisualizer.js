@@ -10,7 +10,34 @@
         // the graphlayout TODO: different layouts as constants
         var layout = null
 
-        this.showGraph = function (graph) {
+        var graphToDomId = function (graph_id) {
+            return graph_id.replace(':', '_')
+        }
+
+        // extracts node name for infovis from nodeType
+        var nodeName = function (node) {
+            // specific name attr
+            var name_of_type = {
+                // node type => name attribute
+                'ia:Document': 'dc:title'
+            }
+
+            if (node['@type'] in name_of_type) {
+                return node[name_of_type[node['@type']]]
+            }
+
+            // generic
+            for (var name_attr of ['nw:hasName']) {
+                if (name_attr in node) {
+                    return node[name_attr]
+                }
+            }
+
+            console.warn('no name attr found for ' + node['@id'])
+            return undefined
+        }
+
+        this.showGraph = function (jsonld_graph) {
             //
             $('*', $graph).remove()
 
@@ -51,14 +78,28 @@
                 }
             })
 
+            console.log(jsonld_graph)
+
             var json = {
-                'id': 'all_domains',
-                'name': 'Domains',
-                'children': graph.map(d => {
+                'id': 'graphVisualizerRoot',
+                'name': 'root',
+                'children': jsonld_graph.map(n => {
+                    var associated_to = n['ia:associatedTo'] || []
+
+                    // single object is not given in list :(
+                    if (!Array.isArray(associated_to)) {
+                        associated_to = [associated_to]
+                    }
+
                     return {
-                        'id': d.id,
-                        'name': d.human,
-                        'children': []
+                        'id': graphToDomId(n['@id']),
+                        'name': nodeName(n),
+                        'children': associated_to.map(a => {
+                            return {
+                                'id': graphToDomId(a['@id']),
+                                'name': nodeName(a)
+                            }
+                        })
                     }
                 })
             }
