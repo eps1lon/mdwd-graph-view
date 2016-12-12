@@ -53,6 +53,15 @@
                     lineWidth: 2,
                     color: "#088"
                 },
+                Events: {
+                    enable: true,
+                    onClick: function (node, eventInfo, e) {
+                        // TODO this is our conceptsSelected handle!
+                        if (node !== false) {
+                            $('#detailView').html('<pre>'  + JSON.stringify(node.data, null, 4) + '</pre>')
+                        }
+                    }
+                },
                 onCreateLabel: function(domElement, node){
                     domElement.innerHTML = node.name;
                 },
@@ -94,6 +103,7 @@
                     return {
                         'id': graphToDomId(n['@id']),
                         'name': nodeName(n),
+                        'data': n,
                         'children': associated_to.map(a => {
                             return {
                                 'id': graphToDomId(a['@id']),

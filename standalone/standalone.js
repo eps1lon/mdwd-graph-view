@@ -31,11 +31,7 @@
         $('#search').text('Anzeige von Objekten mit Typ x (hier Territorium) und assoziierten dokumente')
         abox_query([{
             "@embed": "@always",
-            "@type": "nw:Territory",
-            "ia:associatedTo": {
-                "@embed": "@always",
-                "@type": "ia:Document"
-            }
+            "@type": "nw:Territory"
         }]).then(graph => {
             graph_vis.showGraph(graph)
         })
