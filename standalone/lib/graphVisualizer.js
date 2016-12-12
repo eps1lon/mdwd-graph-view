@@ -82,7 +82,7 @@
 
             var json = {
                 'id': 'graphVisualizerRoot',
-                'name': 'root',
+                'name': jsonld_graph[0]['@type'], // just placeholder
                 'children': jsonld_graph.map(n => {
                     var associated_to = n['ia:associatedTo'] || []
 
