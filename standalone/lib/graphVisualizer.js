@@ -56,9 +56,17 @@
                     // TODO this is our conceptsSelected handle!
                     if (node !== false) {
                         $('#detailView').html('<pre>'  + JSON.stringify(node.data, null, 4) + '</pre>')
+
+                        console.log(node)
                     }
                 }
             },
+            Navigation: {
+                enable: true,
+                panning: true, // 'avoid nodes'
+                zooming: 20
+            },
+
             /**
              * extracts the name for the node from the jsonld data
              *
