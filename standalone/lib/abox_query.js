@@ -17,7 +17,7 @@
         dc: "http://purl.org/dc/terms/"
     }
 
-    $window.abox_query = function (query_graph) {
+    $window.abox_query  = function (query_graph) {
         return new Promise((fulfill, reject) => {
             var query = {
                 "@context": ABOX_CONTEXT,

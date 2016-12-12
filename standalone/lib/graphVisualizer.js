@@ -14,29 +14,6 @@
             return graph_id.replace(':', '_')
         }
 
-        // extracts node name for infovis from nodeType
-        var nodeName = function (node) {
-            // specific name attr
-            var name_of_type = {
-                // node type => name attribute
-                'ia:Document': 'dc:title'
-            }
-
-            if (node['@type'] in name_of_type) {
-                return node[name_of_type[node['@type']]]
-            }
-
-            // generic
-            for (var name_attr of ['nw:hasName']) {
-                if (name_attr in node) {
-                    return node[name_attr]
-                }
-            }
-
-            console.warn('no name attr found for ' + node['@id'])
-            return undefined
-        }
-
         // create jit graph
         var jit = new $jit.Hypertree({
             injectInto: 'domainGraph',
@@ -85,6 +62,8 @@
 
                 if (jsonld['@type'] in name_of_type) {
                     node_name = node[name_of_type[jsonld['@type']]]
+                } else if (jsonld['@type'] === 'ia:ConceptCluster') {
+                    node_name = jsonld['rdfs:label']['@value']
                 } else {
                     // generic
                     for (var name_attr of ['nw:hasName']) {
@@ -95,7 +74,7 @@
                 }
 
                 if (node_name === undefined) {
-                    console.warn('no name attr found for ' + jsonld['@id'])
+                    console.warn('no name attr found for ' + jsonld['@id'], jsonld)
                 }
 
                 $(domElement).text(node_name)
@@ -142,7 +121,7 @@
                         'children': associated_to.map(a => {
                             return {
                                 'id': graphToDomId(a['@id']),
-                                'name': nodeName(a)
+                                'data': 'a'
                             }
                         })
                     }
