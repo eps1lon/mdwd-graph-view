@@ -37,56 +37,84 @@
             return undefined
         }
 
-        this.showGraph = function (jsonld_graph) {
-            //
-            $('*', $graph).remove()
+        // create jit graph
+        var jit = new $jit.Hypertree({
+            injectInto: 'domainGraph',
+            height: $graph.height(),
+            width: $graph.width(),
+            Node: {
+                dim: 9,
+                color: "#f00"
+            },
+            Edge: {
+                lineWidth: 2,
+                color: "#088"
+            },
+            Events: {
+                enable: true,
+                onClick: function (node, eventInfo, e) {
+                    // TODO this is our conceptsSelected handle!
+                    if (node !== false) {
+                        $('#detailView').html('<pre>'  + JSON.stringify(node.data, null, 4) + '</pre>')
+                    }
+                }
+            },
+            /**
+             * extracts the name for the node from the jsonld data
+             *
+             * @param domElement
+             * @param node
+             */
+            onCreateLabel: function(domElement, node){
+                var node_name = node.name
+                var jsonld = node.data
 
-            var ht = new $jit.Hypertree({
-                injectInto: 'domainGraph',
-                height: $graph.height(),
-                width: $graph.width(),
-                Node: {
-                    dim: 9,
-                    color: "#f00"
-                },
-                Edge: {
-                    lineWidth: 2,
-                    color: "#088"
-                },
-                Events: {
-                    enable: true,
-                    onClick: function (node, eventInfo, e) {
-                        // TODO this is our conceptsSelected handle!
-                        if (node !== false) {
-                            $('#detailView').html('<pre>'  + JSON.stringify(node.data, null, 4) + '</pre>')
+                // specific name attr
+                var name_of_type = {
+                    // node type => name attribute
+                    'ia:Document': 'dc:title'
+                }
+
+                if (jsonld['@type'] in name_of_type) {
+                    node_name = node[name_of_type[jsonld['@type']]]
+                } else {
+                    // generic
+                    for (var name_attr of ['nw:hasName']) {
+                        if (name_attr in jsonld) {
+                            node_name = jsonld[name_attr]
                         }
                     }
-                },
-                onCreateLabel: function(domElement, node){
-                    domElement.innerHTML = node.name;
-                },
-                onPlaceLabel: function(domElement, node){
-                    var style = domElement.style;
-                    style.display = '';
-                    style.cursor = 'pointer';
-                    if (node._depth <= 1) {
-                        style.fontSize = "0.8em";
-                        style.color = "#ddd";
-
-                    } else if(node._depth == 2){
-                        style.fontSize = "0.7em";
-                        style.color = "#555";
-
-                    } else {
-                        style.display = 'none';
-                    }
-
-                    var left = parseInt(style.left);
-                    var w = domElement.offsetWidth;
-                    style.left = (left - w / 2) + 'px';
                 }
-            })
 
+                if (node_name === undefined) {
+                    console.warn('no name attr found for ' + jsonld['@id'])
+                }
+
+                $(domElement).text(node_name)
+            },
+            onPlaceLabel: function(domElement, node){
+                var style = domElement.style;
+                style.display = '';
+                style.cursor = 'pointer';
+                if (node._depth <= 1) {
+                    style.fontSize = "0.8em";
+                    style.color = "#ddd";
+
+                } else if(node._depth == 2){
+                    style.fontSize = "0.7em";
+                    style.color = "#555";
+
+                } else {
+                    style.display = 'none';
+                }
+
+                var left = parseInt(style.left);
+                var w = domElement.offsetWidth;
+                style.left = (left - w / 2) + 'px';
+            }
+        })
+
+        this.showGraph = function (jsonld_graph) {
             console.log(jsonld_graph)
 
             var json = {
@@ -102,7 +130,6 @@
 
                     return {
                         'id': graphToDomId(n['@id']),
-                        'name': nodeName(n),
                         'data': n,
                         'children': associated_to.map(a => {
                             return {
@@ -115,9 +142,9 @@
             }
 
             console.log(json)
-            ht.loadJSON(json)
+            jit.loadJSON(json)
 
-            ht.refresh();
+            jit.refresh();
         }
     }
 })(this)
