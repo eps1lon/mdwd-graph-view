@@ -1,9 +1,13 @@
-(function ($window) {
-    var $ = $window.jQuery
+(function (window) {
+    var $ = window.jQuery
+
+    var domId = function (jsonld_id) {
+        return jsonld_id.replace(':', '_')
+    }
 
     // export pattern
-    $window.DomainSelector = function (jqueryContext) {
-        // []<{id: domainId, human: humanReadableString}>
+    window.DomainSelector = function (jqueryContext) {
+        // []<ConceptCluster>
         var domains = []
 
         // callbacks
@@ -17,7 +21,6 @@
 
         // hook change handle
         $('#availableDomains .template .domainCheckbox', $dom).change(function () {
-            console.log('changed')
             that.domainsSelected()
         })
 
@@ -33,7 +36,10 @@
             }
         }
 
-        // if u want to be signaled on domainsSelected hook here!
+        /**
+         *  if u want to be signaled on domainsSelected hook here!
+         * @param cb(selected_domains: []<ConceptCluster>)
+         */
         this.addChangeListener = function (cb) {
             change_listeners.push(cb)
         }
@@ -47,19 +53,19 @@
             $('li:not(.template)', $list).remove()
 
             for (var i = 0; i < domains.length; ++i) {
-                var domain = domains[i]
+                var concept_cluster = domains[i]
                 // clone(withChangeHandles?)
                 var $container = $('.template', $list).clone(true)
                 $container.removeClass('template')
 
+                var dom_id = domId(concept_cluster.name)
 
-                $('.domainCheckbox', $container).attr('id', domain.id)
-                $('.domainCheckbox', $container).attr('value', domain.id)
-                $('.domainLabel', $container).attr('for', domain.id)
-                $('.domainLabel', $container).text(domain.human)
+                $('.domainCheckbox', $container).attr('id', dom_id)
+                $('.domainCheckbox', $container).attr('value', dom_id)
+                $('.domainLabel', $container).attr('for', dom_id)
+                $('.domainLabel', $container).text(concept_cluster.label)
 
                 $list.append($container)
-
             }
 
             // call change listeners
