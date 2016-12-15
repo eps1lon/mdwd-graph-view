@@ -16,7 +16,7 @@
 
         // create jit graph
         var jit = new $jit.Hypertree({
-            injectInto: 'domainGraph',
+            injectInto: $graph.attr('id'),
             height: $graph.height(),
             width: $graph.width(),
             Node: {
@@ -50,7 +50,7 @@
              * @param domElement
              * @param node
              */
-            onCreateLabel: function(domElement, node){
+            onCreateLabel: function(domElement, node) {
                 var node_name = node.name
                 var jsonld = node.data
 
@@ -79,7 +79,7 @@
 
                 $(domElement).text(node_name)
             },
-            onPlaceLabel: function(domElement, node){
+            onPlaceLabel: function(domElement, node) {
                 var style = domElement.style;
                 style.display = '';
                 style.cursor = 'pointer';
@@ -101,6 +101,11 @@
             }
         })
 
+        $(window).resize(function () {
+            jit.canvas.resize($graph.width(), $graph.height())
+        })
+
+        // class functions
         this.showGraph = function (jsonld_graph) {
             console.log(jsonld_graph)
 
