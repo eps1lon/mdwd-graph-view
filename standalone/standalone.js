@@ -1,26 +1,25 @@
 (function (window) {
-	'use strict'
+    'use strict'
     // brower context
-	var document = window.document
-	var $ = window.jQuery
+    var document = window.document
+    var $ = window.jQuery
 
     // func
     var aboxQuery = window.aboxQuery
     var createData = window.createData
 
-	// components
-	var DomainSelector = window.DomainSelector
-	var GraphVisualizer = window.GraphVisualizer
+    // components
+    var DomainSelector = window.DomainSelector
+    var GraphVisualizer = window.GraphVisualizer
 
-	$(document).ready(function () {
+    $(document).ready(function () {
         /**
          * available domains as promise because we have to query them
          * values later available as []<ConceptCluster>
          * @type {Promise}
          */
-		var domains = new Promise((fulfill, reject) => {
-		    abox_query([{
-                "@embed": "@always",
+        var domains = new Promise((fulfill, reject) => {
+            abox_query([{
                 "@type": "ia:ConceptCluster"
             }]).then(graph => {
                 fulfill(graph.map(node => {
@@ -40,8 +39,8 @@
             })
         })
 
-		var domain_selector = new DomainSelector($('#domainSelector'))
-		var graph_vis = new GraphVisualizer($('#graphVis'))
+        var domain_selector = new DomainSelector($('#domainSelector'))
+        var graph_vis = new GraphVisualizer($('#graphVis'))
 
         // handle communication between domainSelector and graph vis
         domain_selector.addChangeListener(function (domains) {
@@ -67,5 +66,5 @@
             //graph_vis.showGraph(graph)
         })
     })
-	
+
 })(this)

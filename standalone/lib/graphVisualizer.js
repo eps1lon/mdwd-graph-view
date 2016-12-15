@@ -24,7 +24,7 @@
             //Change the animation transition type
             transition: $jit.Trans.Circ.easeOut,
             //animation duration (in milliseconds)
-            duration:1000,
+            duration: 1000,
             Node: {
                 dim: 9,
                 color: "#f00",
@@ -44,11 +44,11 @@
 
                         // this is semantically a Tip but Tips are attached to the cursorpointer
                         // and not permanent
-                        $('#detailView').html('<pre>'  + JSON.stringify(node.data, null, 4) + '</pre>')
+                        $('#detailView').html('<pre>' + JSON.stringify(node.data, null, 4) + '</pre>')
 
                         // centering onclick
                         jit.onClick(node.id, {
-                            onComplete: function() {
+                            onComplete: function () {
                                 jit.controller.onComplete();
                             }
                         });
@@ -72,7 +72,7 @@
              * @param domElement
              * @param node
              */
-            onCreateLabel: function(domElement, node) {
+            onCreateLabel: function (domElement, node) {
                 var node_name = node.name
                 var jsonld = node.data
 
@@ -101,7 +101,7 @@
 
                 $(domElement).text(node_name)
             },
-            onPlaceLabel: function(domElement, node) {
+            onPlaceLabel: function (domElement, node) {
                 var style = domElement.style;
                 style.display = '';
                 style.cursor = 'pointer';
@@ -109,7 +109,7 @@
                     style.fontSize = "0.8em";
                     style.color = "#ddd";
 
-                } else if(node._depth == 2){
+                } else if (node._depth == 2) {
                     style.fontSize = "0.7em";
                     style.color = "#555";
 
@@ -180,7 +180,7 @@
 
             // list of promises
             queries = []
-            for  (var domain of domains) {
+            for (var domain of domains) {
                 queries.push(aboxQuery([{
                     "@embed": "@always",
                     "@id": domain.uri
