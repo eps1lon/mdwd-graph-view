@@ -26,15 +26,15 @@
             //animation duration (in milliseconds)
             duration: 1000,
             Node: {
-                dim: 1,
-                color: "#f00",
+                dim: 2,
+                color: 'red',
                 overridable: true,
                 transform: false
             },
             Edge: {
                 lineWidth: 1,
-                color: "#088",
-                overridable: true
+                color: "red",
+                overridable: false
             },
             Events: {
                 enable: true,

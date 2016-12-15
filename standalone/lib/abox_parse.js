@@ -72,11 +72,17 @@
 
                 var json_node = {
                     id: domId(node['@id']),
-                    data: node,
+                    data: Object.assign(node, {
+                        // some number bases on the chars of type as hex
+                        '$color': '#' + ([...node['@type']].reduce((s, c) => s * c.charCodeAt() % (1<<24), 1)).toString(16)
+                    }),
                     adjacencies: adjacencies.map(a => {
                         return {
                             nodeTo: domId(a['@id']),
-                            data: a
+                            data: Object.assign(a, {
+                                // FIXME it's ignored, overridable=true will use node colors
+                                '$color': 'blue'
+                            })
                         }
                     })
                 }
