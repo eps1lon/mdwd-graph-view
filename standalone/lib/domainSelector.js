@@ -34,7 +34,7 @@
          */
         this.domainsSelected = function () {
             console.log('domains selected!')
-            var selected_domains = domains.filter(d => $("#" + d.id, $dom).is(':checked'))
+            var selected_domains = domains.filter(d => $("#" + domId(d.uri), $dom).is(':checked'))
 
             for (var i = 0; i < change_listeners.length; ++i) {
                 change_listeners[i].call(this, selected_domains)
