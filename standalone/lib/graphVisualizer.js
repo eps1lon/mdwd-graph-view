@@ -21,6 +21,10 @@
             injectInto: $graph.attr('id'),
             height: $graph.height(),
             width: $graph.width(),
+            //Change the animation transition type
+            transition: $jit.Trans.Circ.easeOut,
+            //animation duration (in milliseconds)
+            duration:1000,
             Node: {
                 dim: 9,
                 color: "#f00",
@@ -41,6 +45,13 @@
                         // this is semantically a Tip but Tips are attached to the cursorpointer
                         // and not permanent
                         $('#detailView').html('<pre>'  + JSON.stringify(node.data, null, 4) + '</pre>')
+
+                        // centering onclick
+                        jit.onClick(node.id, {
+                            onComplete: function() {
+                                jit.controller.onComplete();
+                            }
+                        });
                     }
                 }
             },
