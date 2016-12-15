@@ -79,13 +79,16 @@
                 // specific name attr
                 var name_of_type = {
                     // node type => name attribute
-                    'ia:Document': 'dc:title'
+                    'ia:Document': 'dc:title',
+                    'nw:Supplier': 'nw:hasTitle'
                 }
 
                 if (jsonld['@type'] in name_of_type) {
-                    node_name = node[name_of_type[jsonld['@type']]]
+                    node_name = jsonld[name_of_type[jsonld['@type']]]
                 } else if (jsonld['@type'] === 'ia:ConceptCluster') {
                     node_name = jsonld['rdfs:label']['@value']
+                } else if (jsonld['nw:hasFirstName']) {
+                    node_name = [jsonld['nw:hasFirstName'], jsonld['nw:hasLastName']].join(' ')
                 } else {
                     // generic
                     for (var name_attr of ['nw:hasName']) {
