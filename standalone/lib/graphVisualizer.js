@@ -129,7 +129,7 @@
 
         // class functions
         this.showGraph = function (jsonld_graph) {
-            console.log(jsonld_graph)
+            console.log('showGraph caught with', jsonld_graph)
 
             var json = {
                 'id': 'graphVisualizerRoot',
@@ -166,7 +166,7 @@
          * @param {Array<ConceptCluster>} domains
          */
         this.showDomain = function (domains) {
-            console.log('showDomain', domains)
+            console.log('showDomain caught with', domains)
 
             // remove conceptcluster from graph that are not included
 

@@ -1,15 +1,6 @@
 (function (window) {
     var $ = window.jQuery
 
-    /**
-     * creates a W3C conform dom id from an uri
-     * @param uri
-     * @returns {string}
-     */
-    var domId = function (uri) {
-        return uri.replace(':', '_')
-    }
-
     // export pattern
     window.DomainSelector = function (jqueryContext) {
         // []<ConceptCluster>
@@ -29,12 +20,35 @@
             that.domainsSelected()
         })
 
+        /**
+         * TODO later provided from component context
+         */
+        this.renderTargetId = jqueryContext.attr('id')
+
+        /**
+         * helper to generate a unique id that doesnt collide with another instance of this component
+         * @param id
+         * @returns {String}
+         */
+        this.generateId = function (id) {
+            return this.renderTargetId + id
+        }
+
+        /**
+         * creates a W3C conform dom id from an uri
+         * @param uri
+         * @returns {string}
+         */
+        this.domId = function (uri) {
+            return this.generateId(uri.replace(':', '_'))
+        }
+
         /*
          * fire callback with new domains
          */
         this.domainsSelected = function () {
-            console.log('domains selected!')
-            var selected_domains = domains.filter(d => $("#" + domId(d.uri), $dom).is(':checked'))
+            var selected_domains = domains.filter(d => $("#" + this.domId(d.uri), $dom).is(':checked'))
+            console.log('domainsSelected fired with', selected_domains)
 
             for (var i = 0; i < change_listeners.length; ++i) {
                 change_listeners[i].call(this, selected_domains)
@@ -51,6 +65,7 @@
 
 
         this.displayDomains = function (new_domains) {
+            console.log('displayDomains caught with', new_domains)
             domains = new_domains
 
             var $list = $('#availableDomains', $dom)
@@ -66,10 +81,10 @@
                 var $container = $('.template', $list).clone(true)
                 $container.removeClass('template')
 
-                var dom_id = domId(concept_cluster.uri)
+                var dom_id = this.domId(concept_cluster.uri)
 
                 $('.domainCheckbox', $container).attr('id', dom_id)
-                $('.domainCheckbox', $container).attr('value', dom_id)
+                $('.domainCheckbox', $container).attr('value', concept_cluster.uri)
                 $('.domainLabel', $container).attr('for', dom_id)
                 $('.domainLabel', $container).text(concept_cluster.label)
 
