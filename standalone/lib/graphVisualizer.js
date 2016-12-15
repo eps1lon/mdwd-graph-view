@@ -56,12 +56,18 @@
                         // centering onclick
                         jit.onClick(node.id)
                     }
+                },
+                onMouseWheel: function (delta, e) {
+                    var size = jit.canvas.getSize()
+                    // TODO remember old position
+                    jit.canvas.resize(size.width + 2*delta, size.height + 2*delta)
                 }
             },
             Navigation: {
                 enable: true,
                 panning: true, // 'avoid nodes'
-                zooming: 20
+                //zooming: 20,
+                type: 'Native'
             },
             Tips: {
                 enable: true,
