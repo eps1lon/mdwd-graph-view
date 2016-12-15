@@ -27,8 +27,11 @@
                     // ConceptCluster extends Artefact
                     var concept_cluster = createData('ConceptCluster')
 
+                    console.log(node)
+
                     // fill in data from abox
-                    concept_cluster.name = node['@id']
+                    concept_cluster.uri = node['@id']
+                    concept_cluster.name = node['ia:hasClusterID']
                     concept_cluster.type = node['@type']
                     concept_cluster.label = node['rdfs:label']['@value']
 

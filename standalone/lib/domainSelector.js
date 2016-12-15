@@ -1,8 +1,13 @@
 (function (window) {
     var $ = window.jQuery
 
-    var domId = function (jsonld_id) {
-        return jsonld_id.replace(':', '_')
+    /**
+     * creates a W3C conform dom id from an uri
+     * @param uri
+     * @returns {string}
+     */
+    var domId = function (uri) {
+        return uri.replace(':', '_')
     }
 
     // export pattern
@@ -53,17 +58,23 @@
             $('li:not(.template)', $list).remove()
 
             for (var i = 0; i < domains.length; ++i) {
-                var concept_cluster = domains[i]
+                let concept_cluster = domains[i]
                 // clone(withChangeHandles?)
                 var $container = $('.template', $list).clone(true)
                 $container.removeClass('template')
 
-                var dom_id = domId(concept_cluster.name)
+                var dom_id = domId(concept_cluster.uri)
 
                 $('.domainCheckbox', $container).attr('id', dom_id)
                 $('.domainCheckbox', $container).attr('value', dom_id)
                 $('.domainLabel', $container).attr('for', dom_id)
                 $('.domainLabel', $container).text(concept_cluster.label)
+
+                $container.contextmenu(function () {
+                    $('#detailView').text(JSON.stringify(concept_cluster, null, 4))
+
+                    return false
+                })
 
                 $list.append($container)
             }
