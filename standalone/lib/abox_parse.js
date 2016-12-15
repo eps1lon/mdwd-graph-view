@@ -23,7 +23,7 @@
          * queue type LIFO
          * @type {Array}
          */
-        var unparsed = abox
+        var unparsed = JSON.parse(JSON.stringify(abox)) // clone
 
         /**
          * the extended json for infovis
@@ -40,12 +40,31 @@
                 var adjacencies = []
 
                 switch (node['@type']) {
-                    case 'nw:Product':
-                        adjacencies.push(node['nw:hasProductCategory'], node['nw:hasSupplier'])
-                        break;
+                    // infoapp TBOX
                     case 'ia:ConceptCluster':
                         adjacencies.push(...node['ia:containsIndividual'])
-                        break;
+                        break
+                    // northwind TBOX
+                    case 'nw:Product':
+                        adjacencies.push(node['nw:hasProductCategory'], node['nw:hasSupplier'])
+                        break
+                    case 'nw:Employee':
+                        adjacencies.push(node['nw:hasTerritory'])
+                        break
+                    case 'nw:Order':
+                        adjacencies.push(
+                            node['nw:hasEmployee'],
+                            node['nw:hasCustomer'],
+                            //node['nw:hasOrderDetails'], // not in order0
+                            //node['nw:hasShippingRegion'],
+                            node['nw:viaShipper']
+                        )
+                        break
+                    case 'nw:OrderDetails':
+                        adjacencies.push(
+                            node['nw:hasOrder'],
+                            node['nw:hasProduct']
+                        )
                 }
 
                 // walk the adjacents
@@ -66,8 +85,9 @@
             }
         }
 
-        // TODO infovis needs a closed tree (e.g. there cant be two sets of nodes that dont connect)
+        // TODO infovis needs a connected graph, disconnected graphs cannot be drawn nicely
         // thats currently not guaranteed
+        console.log(json.map(n => n.id))
         return json
     }
 })(this)

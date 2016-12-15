@@ -26,13 +26,13 @@
             //animation duration (in milliseconds)
             duration: 1000,
             Node: {
-                dim: 9,
+                dim: 1,
                 color: "#f00",
                 overridable: true,
                 transform: false
             },
             Edge: {
-                lineWidth: 2,
+                lineWidth: 1,
                 color: "#088",
                 overridable: true
             },
@@ -131,32 +131,7 @@
         this.showGraph = function (jsonld_graph) {
             console.log('showGraph caught with', jsonld_graph)
 
-            var json = {
-                'id': 'graphVisualizerRoot',
-                'name': jsonld_graph[0]['@type'], // just placeholder
-                'children': jsonld_graph.map(n => {
-                    var associated_to = n['ia:associatedTo'] || []
-
-                    // single object is not given in list :(
-                    if (!Array.isArray(associated_to)) {
-                        associated_to = [associated_to]
-                    }
-
-                    return {
-                        'id': graphToDomId(n['@id']),
-                        'data': n,
-                        'children': associated_to.map(a => {
-                            return {
-                                'id': graphToDomId(a['@id']),
-                                'data': 'a'
-                            }
-                        })
-                    }
-                })
-            }
-
-            console.log(json)
-            jit.loadJSON(json)
+            jit.loadJSON(aboxParse(jsonld_graph))
 
             jit.refresh();
         }
@@ -188,8 +163,6 @@
             }
 
             Promise.all(queries).then(function (results) {
-                console.log(results)
-
                 if (results.length) {
                     jit.loadJSON(aboxParse([].concat(...results))) // flattened array
                     jit.refresh()

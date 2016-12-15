@@ -50,20 +50,21 @@
         domains.then(domains => {
             domain_selector.displayDomains(domains)
 
-            // TODO select first for testing
+            /* TODO select first for testing
             $('#availableDomains li:visible:first input[type=checkbox]')
                 .prop('checked', true)
-                .trigger('change')
+                .trigger('change')//*/
 
         })
 
         // northwind graph TODO testing
-        $('#search').text('Anzeige von Objekten mit Typ x (hier Territorium) und assoziierten dokumente')
+        $('#search').text('Anzeige von Objekten mit Typ x und assoziierten dokumente')
         abox_query([{
             "@embed": "@always",
-            "@type": "nw:Territory"
+            //"@type": "nw:OrderDetails",
+            "@id": "nwa:OrderDetails0"
         }]).then(graph => {
-            //graph_vis.showGraph(graph)
+            graph_vis.showGraph(graph)
         })
     })
 
