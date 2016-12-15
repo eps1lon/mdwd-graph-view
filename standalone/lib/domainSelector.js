@@ -58,7 +58,10 @@
             $('li:not(.template)', $list).remove()
 
             for (var i = 0; i < domains.length; ++i) {
+                // we use the scope of let here so that jquery handles can still access it
+                // usage of var would lead to access of the last instantiated concept_cluster
                 let concept_cluster = domains[i]
+
                 // clone(withChangeHandles?)
                 var $container = $('.template', $list).clone(true)
                 $container.removeClass('template')
