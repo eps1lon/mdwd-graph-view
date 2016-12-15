@@ -26,7 +26,7 @@
             //animation duration (in milliseconds)
             duration: 1000,
             Node: {
-                dim: 2,
+                dim: 10,
                 color: 'red',
                 overridable: true,
                 transform: false
@@ -38,20 +38,23 @@
             },
             Events: {
                 enable: true,
+                type: 'Native',
                 onClick: function (node, eventInfo, e) {
+                    var pos = eventInfo.getPos()
+
+                    if (node === false) {
+                        // this doesnt really work
+                        // node = jit.graph.getClosestNodeToPos(new $jit.Complext(pos.x, pos.y))
+                    }
+
                     // TODO this is our conceptsSelected handle!
                     if (node !== false) {
-
                         // this is semantically a Tip but Tips are attached to the cursorpointer
                         // and not permanent
                         $('#detailView').html('<pre>' + JSON.stringify(node.data, null, 4) + '</pre>')
 
                         // centering onclick
-                        jit.onClick(node.id, {
-                            onComplete: function () {
-                                jit.controller.onComplete();
-                            }
-                        });
+                        jit.onClick(node.id)
                     }
                 }
             },
@@ -105,24 +108,6 @@
                 $(domElement).text(node_name)
             },
             onPlaceLabel: function (domElement, node) {
-                var style = domElement.style;
-                style.display = '';
-                style.cursor = 'pointer';
-                if (node._depth <= 1) {
-                    style.fontSize = "0.8em";
-                    style.color = "#ddd";
-
-                } else if (node._depth == 2) {
-                    style.fontSize = "0.7em";
-                    style.color = "#555";
-
-                } else {
-                    style.display = 'none';
-                }
-
-                var left = parseInt(style.left);
-                var w = domElement.offsetWidth;
-                style.left = (left - w / 2) + 'px';
             }
         })
 
