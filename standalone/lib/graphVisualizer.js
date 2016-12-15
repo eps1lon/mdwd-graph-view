@@ -1,6 +1,8 @@
 (function ($window) {
     var $ = $window.jQuery
 
+    var aboxQuery = window.abox_query
+
     $window.GraphVisualizer = function (jqueryContext) {
         var $dom = jqueryContext
 
@@ -21,11 +23,14 @@
             width: $graph.width(),
             Node: {
                 dim: 9,
-                color: "#f00"
+                color: "#f00",
+                overridable: true,
+                transform: false
             },
             Edge: {
                 lineWidth: 2,
-                color: "#088"
+                color: "#088",
+                overridable: true
             },
             Events: {
                 enable: true,
@@ -143,6 +148,84 @@
             jit.loadJSON(json)
 
             jit.refresh();
+        }
+
+        /**
+         *
+         * @param {Array<ConceptCluster>} domains
+         */
+        this.showDomain = function (domains) {
+            console.log('showDomain', domains)
+
+            // remove conceptcluster from graph that are not included
+
+            // add new graph for domain
+
+            // for now we use the empty-create crowbar
+            jit.canvas.clear()
+
+            // query Things contained in Conceptcluster
+            // TODO is there a way to query `where in` instead of iterating over list?
+
+            // list of promises
+            queries = []
+            for  (var domain of domains) {
+                queries.push(aboxQuery([{
+                    "@embed": "@always",
+                    "@id": domain.uri
+                }]))
+            }
+
+            Promise.all(queries).then(function (results) {
+                console.log(results)
+
+                var json = [].concat(...results.map(clusters => {
+                    return clusters[0]['ia:containsIndividual'].map(individual => {
+                        var node = {
+                            id: graphToDomId(individual['@id']),
+                            // merge actual abox data with jit specific values
+                            // jit specifics are prefixed with $ per api doc
+                            data: Object.assign({
+                                '$dim': 10,
+                                '$type': 'triangle'
+                            }, individual),
+                            adjacencies: []
+                        }
+
+                        var adjacencies = []
+
+                        if (Array.isArray(individual['ia:associatedTo'])) {
+                            adjacencies.push(...individual['ia:associatedTo'].map(thing => {
+                                return {
+                                    nodeTo: graphToDomId(thing['@id']),
+                                    data: thing
+                                }
+                            }))
+                        }
+
+                        // add adjacencies according to TBOX
+                        if (individual['@type'] == 'nw:Product') {
+                            adjacencies.push({
+                                nodeTo: graphToDomId(individual['nw:hasProductCategory']['@id']),
+                                data: individual['nw:hasProductCategory']
+                            })
+                        }
+
+                        node.adjacencies = adjacencies
+
+                        return node
+                    })
+                }))
+
+                console.log(json)
+
+
+                if (json.length) {
+                    jit.loadJSON(json)
+                    jit.refresh()
+                }
+
+            })
         }
     }
 })(this)

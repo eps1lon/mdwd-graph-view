@@ -27,7 +27,7 @@
                     // ConceptCluster extends Artefact
                     var concept_cluster = createData('ConceptCluster')
 
-                    console.log(node)
+                    //console.log(node)
 
                     // fill in data from abox
                     concept_cluster.uri = node['@id']
@@ -45,20 +45,26 @@
 
         // handle communication between domainSelector and graph vis
         domain_selector.addChangeListener(function (domains) {
-            //graph_vis.showGraph(domains)
+            graph_vis.showDomain(domains)
         })
 
         domains.then(domains => {
             domain_selector.displayDomains(domains)
+
+            // TODO select first for testing
+            $('#availableDomains li:visible:first input[type=checkbox]')
+                .prop('checked', true)
+                .trigger('change')
+
         })
 
-        // northwind graph TODO static
+        // northwind graph TODO testing
         $('#search').text('Anzeige von Objekten mit Typ x (hier Territorium) und assoziierten dokumente')
         abox_query([{
             "@embed": "@always",
             "@type": "nw:Territory"
         }]).then(graph => {
-            graph_vis.showGraph(graph)
+            //graph_vis.showGraph(graph)
         })
     })
 	
