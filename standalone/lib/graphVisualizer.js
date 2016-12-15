@@ -73,7 +73,7 @@
              * @param node
              */
             onCreateLabel: function (domElement, node) {
-                var node_name = node.name
+                var node_name = node.name || node.id
                 var jsonld = node.data
 
                 // specific name attr
@@ -190,49 +190,8 @@
             Promise.all(queries).then(function (results) {
                 console.log(results)
 
-                var json = [].concat(...results.map(clusters => {
-                    return clusters[0]['ia:containsIndividual'].map(individual => {
-                        var node = {
-                            id: graphToDomId(individual['@id']),
-                            // merge actual abox data with jit specific values
-                            // jit specifics are prefixed with $ per api doc
-                            data: Object.assign({
-                                '$dim': 10,
-                                '$type': 'triangle'
-                            }, individual),
-                            adjacencies: []
-                        }
-
-                        var adjacencies = []
-
-                        if (Array.isArray(individual['ia:associatedTo'])) {
-                            adjacencies.push(...individual['ia:associatedTo'].map(thing => {
-                                return {
-                                    nodeTo: graphToDomId(thing['@id']),
-                                    data: thing
-                                }
-                            }))
-                        }
-
-                        // add adjacencies according to TBOX
-                        if (individual['@type'] == 'nw:Product') {
-                            adjacencies.push({
-                                nodeTo: graphToDomId(individual['nw:hasProductCategory']['@id']),
-                                data: individual['nw:hasProductCategory']
-                            })
-                        }
-
-                        node.adjacencies = adjacencies
-
-                        return node
-                    })
-                }))
-
-                console.log(json)
-
-
-                if (json.length) {
-                    jit.loadJSON(json)
+                if (results.length) {
+                    jit.loadJSON(aboxParse([].concat(...results))) // flattened array
                     jit.refresh()
                 }
 
