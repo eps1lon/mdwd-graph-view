@@ -32,9 +32,10 @@
                 onClick: function (node, eventInfo, e) {
                     // TODO this is our conceptsSelected handle!
                     if (node !== false) {
-                        $('#detailView').html('<pre>'  + JSON.stringify(node.data, null, 4) + '</pre>')
 
-                        console.log(node)
+                        // this is semantically a Tip but Tips are attached to the cursorpointer
+                        // and not permanent
+                        $('#detailView').html('<pre>'  + JSON.stringify(node.data, null, 4) + '</pre>')
                     }
                 }
             },
@@ -43,7 +44,12 @@
                 panning: true, // 'avoid nodes'
                 zooming: 20
             },
-
+            Tips: {
+                enable: true,
+                onShow: function (tip, node) {
+                    // thats where Events.onClick should be in a perfect world
+                }
+            },
             /**
              * extracts the name for the node from the jsonld data
              *
