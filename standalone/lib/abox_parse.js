@@ -65,6 +65,14 @@
                             node['nw:hasOrder'],
                             node['nw:hasProduct']
                         )
+                        break
+                    case 'rdf:Statement':
+                        adjacencies.push(
+                            node['rdf:object'],
+                            node['rdf:predicate'],
+                            node['rdf:subject']
+                        )
+                        break
                 }
 
                 // walk the adjacents
@@ -74,8 +82,8 @@
                     id: domId(node['@id']),
                     data: Object.assign(node, {
                         // some number bases on the chars of type as hex
-                        '$color': '#' + ([...node['@type']].reduce((s, c) => s * c.charCodeAt() % (1<<24), 1)).toString(16),
-                        '$colorBasedOn': '@type' // legend helper
+                        '$color': '#' + ([...(node['@type'] || node['@id'])].reduce((s, c) => s * c.charCodeAt() % (1<<24), 1)).toString(16),
+                        '$colorBasedOn': node['@type'] ? '@type' : '@id' // legend helper
                     }),
                     adjacencies: adjacencies.map(a => {
                         return {
