@@ -74,7 +74,8 @@
                     id: domId(node['@id']),
                     data: Object.assign(node, {
                         // some number bases on the chars of type as hex
-                        '$color': '#' + ([...node['@type']].reduce((s, c) => s * c.charCodeAt() % (1<<24), 1)).toString(16)
+                        '$color': '#' + ([...node['@type']].reduce((s, c) => s * c.charCodeAt() % (1<<24), 1)).toString(16),
+                        '$colorBasedOn': '@type' // legend helper
                     }),
                     adjacencies: adjacencies.map(a => {
                         return {

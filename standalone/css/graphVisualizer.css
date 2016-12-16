@@ -34,3 +34,28 @@
 
 #memberberries {
 }
+
+#graphLegend {
+    position: absolute;
+    top: 30%;
+}
+
+#graphLegend h2 {
+    cursor: help;
+}
+
+#graphLegend dl {
+    overflow: hidden;
+    display: none;
+}
+
+#graphLegend dd {
+    float: left;
+}
+
+#graphLegend dt {
+    clear: both;
+    float: left;
+    width: 1em;
+    height: 1em;
+}

@@ -8,6 +8,7 @@
 
         var $minimap = $('#graphMinimap', $dom)
         var $graph = $('#domainGraph', $dom)
+        var $graphLegend = $('#graphLegend', $dom)
 
         // the graphlayout TODO: different layouts as constants
         var layout = null
@@ -15,6 +16,8 @@
         var graphToDomId = function (graph_id) {
             return graph_id.replace(':', '_')
         }
+
+        var that = this
 
         // create jit graph
         var jit = new $jit.Hypertree({
@@ -107,6 +110,42 @@
 
                 $(domElement).text(node_name)
             },
+            onComplete: function () {
+                // create legend
+                var $legend = $('dl', $graphLegend)
+                //$legend.remove(':not(.template)')
+
+
+                // create map
+                var colors = new Set()
+
+                // loop through node and map $color => $colorBasedOn
+                $jit.Graph.Util.eachNode(jit.graph, function (node) {
+                    var color = node.data['$color'] || node.Node.color
+
+                    if (!colors.has(color)) {
+                        colors.add(color)
+
+                        var legend = 'Unknown'
+                        if (node.data['$colorBasedOn']) {
+                            legend
+                                = node.data['$colorBasedOn'].split(',')
+                                                            .map(basedOn => node.data[basedOn])
+                        }
+                        console.log(color, legend)
+
+                        var $color = $('.color.template', $legend).clone(true)
+                                                                  .removeClass('template')
+                        var $desc = $('.colorLegend.template', $legend).clone(true)
+                                                                       .removeClass('template')
+
+                        $color.css('background-color', color)
+                        $desc.text(legend)
+
+                        $legend.append($color, $desc)
+                    }
+                })
+            },
             onPlaceLabel: function (domElement, node) {
             }
         })
@@ -115,13 +154,18 @@
             jit.canvas.resize($graph.width(), $graph.height())
         })
 
+        $('h2', $graphLegend).click(function () {
+            $('dl', $graphLegend).toggle()
+        })
+
         // class functions
         this.showGraph = function (jsonld_graph) {
             console.log('showGraph caught with', jsonld_graph)
 
             jit.loadJSON(aboxParse(jsonld_graph))
 
-            jit.refresh();
+            jit.refresh()
+            jit.controller.onComplete()
         }
 
         /**
@@ -152,8 +196,7 @@
 
             Promise.all(queries).then(function (results) {
                 if (results.length) {
-                    jit.loadJSON(aboxParse([].concat(...results))) // flattened array
-                    jit.refresh()
+                    that.showGraph([].concat(...results)) // flattened array
                 }
 
             })
