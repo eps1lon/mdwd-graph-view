@@ -113,8 +113,9 @@
             onComplete: function () {
                 // create legend
                 var $legend = $('dl', $graphLegend)
-                //$legend.remove(':not(.template)')
 
+                // remove old
+                $('*:not(.template)', $legend).remove()
 
                 // create map
                 var colors = new Set()
@@ -132,7 +133,6 @@
                                 = node.data['$colorBasedOn'].split(',')
                                                             .map(basedOn => node.data[basedOn])
                         }
-                        console.log(color, legend)
 
                         var $color = $('.color.template', $legend).clone(true)
                                                                   .removeClass('template')
