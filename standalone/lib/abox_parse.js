@@ -100,9 +100,9 @@
             }
         }
 
-        // TODO infovis needs a connected graph, disconnected graphs cannot be drawn nicely
+        // TODO infovis hypertree needs a connected graph, disconnected graphs cannot be drawn nicely
         // thats currently not guaranteed
-        console.log(json.map(n => n.id))
+        //console.log(json.map(n => n.id))
         return json
     }
 })(this)

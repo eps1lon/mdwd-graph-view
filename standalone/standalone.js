@@ -63,7 +63,7 @@
         })
 
         // northwind graph TODO testing
-        $('#search').text('Anzeige von Objekten mit Typ x und assoziierten dokumente')
+        //$('#search').text('Anzeige von Objekten mit Typ x und assoziierten dokumente')
         abox_query([{
             "@embed": "@always",
             //"@type": "nw:OrderDetails",
