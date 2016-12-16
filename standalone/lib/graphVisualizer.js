@@ -20,7 +20,7 @@
         var that = this
 
         // create jit graph
-        var jit = new $jit.Hypertree({
+        var jit = new $jit.ForceDirected({
             injectInto: $graph.attr('id'),
             height: $graph.height(),
             width: $graph.width(),
@@ -57,7 +57,10 @@
                         $('#detailView').html('<pre>' + JSON.stringify(node.data, null, 4) + '</pre>')
 
                         // centering onclick
-                        jit.onClick(node.id)
+                        // ForceDirected has no centering
+                        if ($.isFunction(jit.onClick)) {
+                            jit.onClick(node.id)
+                        }
                     }
                 }
             },
