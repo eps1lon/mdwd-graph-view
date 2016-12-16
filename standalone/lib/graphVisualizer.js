@@ -10,11 +10,26 @@
         var $graph = $('#domainGraph', $dom)
         var $graphLegend = $('#graphLegend', $dom)
 
+        var concepts_selected_listeners = []
+
         // the graphlayout TODO: different layouts as constants
         var layout = null
 
         var graphToDomId = function (graph_id) {
             return graph_id.replace(':', '_')
+        }
+
+        /**
+         * generates a Concept object as described in the data schema
+         * https://trac.mmt.inf.tu-dresden.de/CRUISe/wiki/applications/infoapp#DatenschematafürKomponentenschnittstellen
+         *
+         * @param jsonld
+         */
+        var ldToArtefact = function (jsonld) {
+            return Object.assign(window.createData('Artefact'), {
+                'uri': jsonld['@id'],
+                'type': jsonld['@type']
+            })
         }
 
         var that = this
@@ -51,6 +66,28 @@
                     }
 
                     // TODO this is our conceptsSelected handle!
+                    if (node !== false) {
+                        // toggle selected
+                        node.data['$selected'] = !node.data['$selected']
+
+                        // get selected
+                        $jit.Graph.Util.eachNode(jit.graph, function (node) {
+                            // TODO selected style
+                            if (node.data['$selected']) {
+                                node.data['$type'] = 'triangle'
+                            } else {
+                                node.data['$type'] = node.Config.type
+                            }
+                        })
+
+                        jit.animate();
+                        //jit.select(jit.root);
+
+                        // fire change handle
+                        that.conceptsSelected()
+                    }
+                },
+                onRightClick: function (node, eventInfo, e) {
                     if (node !== false) {
                         // this is semantically a Tip but Tips are attached to the cursorpointer
                         // and not permanent
@@ -111,7 +148,7 @@
                     console.warn('no name attr found for ' + jsonld['@id'], jsonld)
                 }
 
-                $(domElement).text(node_name)
+                //$(domElement).text(node_name)
             },
             onComplete: function () {
                 // create legend
@@ -168,6 +205,7 @@
             jit.loadJSON(aboxParse(jsonld_graph))
 
             jit.refresh()
+            jit.animate()
             jit.controller.onComplete()
         }
 
@@ -203,6 +241,35 @@
                 }
 
             })
+        }
+
+        /**
+         * fires conceptsSelected signla
+         */
+        this.conceptsSelected = function () {
+            var selected_concepts = []
+
+            // get selected
+            $jit.Graph.Util.eachNode(jit.graph, function (node) {
+                // TODO selected style
+                if (node.data['$selected']) {
+                    selected_concepts.push(ldToArtefact(node.data))
+                }
+            })
+
+            console.log('conceptsSelected fired with', selected_concepts)
+
+            for (var i = 0; i < concepts_selected_listeners.length; ++i) {
+                concepts_selected_listeners[i].call(this, selected_concepts)
+            }
+        }
+
+        /**
+         *  if u want to be signaled on conceptsSelected hook here!
+         * @param cb(concepts: []<Artefact>)
+         */
+        this.addConceptsSelectedListener = function (cb) {
+            concepts_selected_listeners.push(cb)
         }
     }
 })(this)

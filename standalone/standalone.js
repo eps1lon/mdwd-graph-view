@@ -47,6 +47,11 @@
             graph_vis.showDomain(domains)
         })
 
+        graph_vis.addConceptsSelectedListener(function (concepts) {
+            // detailView.showDetails(concepts)
+            $('#detailView').text(JSON.stringify(concepts, null, 4))
+        })
+
         domains.then(domains => {
             domain_selector.displayDomains(domains)
 
