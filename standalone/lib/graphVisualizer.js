@@ -10,8 +10,12 @@
         var $graph = $('#domainGraph', $dom)
         var $graphLegend = $('#graphLegend', $dom)
 
-        // the graphlayout TODO: different layouts as constants
-        var layout = null
+        // the graphlayouts
+        var graph_layouts = {
+            // options jit_constructor => human
+            'Hypertree': 'Hyper Hyper Tree',
+            'ForceDirected': 'Force Directed'
+        }
 
         var graphToDomId = function (graph_id) {
             return graph_id.replace(':', '_')
@@ -19,8 +23,7 @@
 
         var that = this
 
-        // create jit graph
-        var jit = new $jit.Hypertree({
+        var jit_options = {
             injectInto: $graph.attr('id'),
             height: $graph.height(),
             width: $graph.width(),
@@ -29,7 +32,7 @@
             //animation duration (in milliseconds)
             duration: 1000,
             Node: {
-                dim: 10,
+                dim: 2,
                 color: 'red',
                 overridable: true,
                 transform: false
@@ -108,7 +111,7 @@
                     console.warn('no name attr found for ' + jsonld['@id'], jsonld)
                 }
 
-                $(domElement).text(node_name)
+                //$(domElement).text(node_name)
             },
             onComplete: function () {
                 // create legend
@@ -131,13 +134,13 @@
                         if (node.data['$colorBasedOn']) {
                             legend
                                 = node.data['$colorBasedOn'].split(',')
-                                                            .map(basedOn => node.data[basedOn])
+                                .map(basedOn => node.data[basedOn])
                         }
 
                         var $color = $('.color.template', $legend).clone(true)
-                                                                  .removeClass('template')
+                            .removeClass('template')
                         var $desc = $('.colorLegend.template', $legend).clone(true)
-                                                                       .removeClass('template')
+                            .removeClass('template')
 
                         $color.css('background-color', color)
                         $desc.text(legend)
@@ -148,15 +151,55 @@
             },
             onPlaceLabel: function (domElement, node) {
             }
-        })
+        }
 
-        $(window).resize(function () {
-            jit.canvas.resize($graph.width(), $graph.height())
-        })
+        // jit object
+        var jit = null
 
-        $('h2', $graphLegend).click(function () {
-            $('dl', $graphLegend).toggle()
-        })
+        this.init = function () {
+            // layoutchanger
+            $('#graphLayouts').change(function () {
+                // save old data
+                var json = JSON.parse(JSON.stringify(jit.json))
+
+                jit.graph.empty()
+
+                console.log(json)
+
+                jit = new $jit[$(this).val()](jit_options)
+                jit.loadJSON(json)
+                jit.refresh()
+                jit.controller.onComplete()
+                // FIXME graph disappears after first nav option
+            })
+
+            for (var layout in graph_layouts) {
+                // display layouts
+                var $layout = $('#graphLayouts option.template', $dom).clone(true)
+                                                                      .removeClass('template')
+
+                $layout.val(layout)
+                $layout.text(graph_layouts[layout])
+                $layout.appendTo('#graphLayouts')
+            }
+
+            // remove template
+            $('#graphLayouts .template').remove()
+
+            // and init jit
+            $('#graphLayouts option[value=' + layout + ']').prop('selected', true)
+            jit = new $jit[layout](jit_options)
+
+            $(window).resize(function () {
+                jit.canvas.resize($graph.width(), $graph.height())
+            })
+
+            $('h2', $graphLegend).click(function () {
+                $('dl', $graphLegend).toggle()
+            })
+        }
+
+        this.init()
 
         // class functions
         this.showGraph = function (jsonld_graph) {
