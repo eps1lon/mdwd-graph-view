@@ -87,6 +87,19 @@
                         that.conceptsSelected()
                     }
                 },
+                //Change cursor style when hovering a node
+                onMouseEnter: function() {
+                    jit.canvas.getElement().style.cursor = 'move';
+                },
+                onMouseLeave: function() {
+                    jit.canvas.getElement().style.cursor = '';
+                },
+                //Update node positions when dragged
+                onDragMove: function(node, eventInfo, e) {
+                    var pos = eventInfo.getPos();
+                    node.pos.setc(pos.x, pos.y);
+                    jit.plot();
+                },
                 onRightClick: function (node, eventInfo, e) {
                     if (node !== false) {
                         // this is semantically a Tip but Tips are attached to the cursorpointer
@@ -103,7 +116,8 @@
             },
             Navigation: {
                 enable: true,
-                panning: true, // 'avoid nodes'
+                type: 'Native', // check events type, got no d&d when type in navigation was not set
+                panning: 'avoid nodes', // 'avoid nodes'
                 zooming: 20
             },
             Tips: {
