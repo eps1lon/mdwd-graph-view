@@ -87,6 +87,7 @@
                         that.conceptsSelected()
                     }
                 },
+                /*
                 //Change cursor style when hovering a node
                 onMouseEnter: function() {
                     jit.canvas.getElement().style.cursor = 'move';
@@ -99,7 +100,7 @@
                     var pos = eventInfo.getPos();
                     node.pos.setc(pos.x, pos.y);
                     jit.plot();
-                },
+                },//*/
                 onRightClick: function (node, eventInfo, e) {
                     if (node !== false) {
                         // this is semantically a Tip but Tips are attached to the cursorpointer
@@ -204,13 +205,37 @@
             }
         })
 
-        $(window).resize(function () {
-            jit.canvas.resize($graph.width(), $graph.height())
-        })
+        this.init = function () {
+            $(window).resize(function () {
+                jit.canvas.resize($graph.width(), $graph.height())
+            })
 
-        $('h2', $graphLegend).click(function () {
-            $('dl', $graphLegend).toggle()
-        })
+            $('h2', $graphLegend).click(function () {
+                $('dl', $graphLegend).toggle()
+            })
+
+            var median = list => list.length ? list.reduce((s, n) => s + n, 0) / list.length : 0
+
+            $('#graphFocus').click(function () {
+                var concepts = that.getSelectedConcepts()
+                var positions = {
+                    x: [],
+                    y: []
+                }
+
+                // get center of concepts
+                for (var concept of concepts) {
+                    var node = $jit.Graph.Util.getNode(jit.graph, graphToDomId(concept.uri))
+                    positions.x.push(node.pos.x)
+                    positions.y.push(node.pos.y)
+                }
+
+                // TODO canvas pos
+            })
+        }
+
+        this.init()
+
 
         // class functions
         this.showGraph = function (jsonld_graph) {
@@ -257,19 +282,24 @@
             })
         }
 
-        /**
-         * fires conceptsSelected signla
-         */
-        this.conceptsSelected = function () {
+        this.getSelectedConcepts = function () {
             var selected_concepts = []
 
             // get selected
             $jit.Graph.Util.eachNode(jit.graph, function (node) {
-                // TODO selected style
                 if (node.data['$selected']) {
                     selected_concepts.push(ldToArtefact(node.data))
                 }
             })
+
+            return selected_concepts
+        }
+
+        /**
+         * fires conceptsSelected signla
+         */
+        this.conceptsSelected = function () {
+            var selected_concepts = this.getSelectedConcepts()
 
             console.log('conceptsSelected fired with', selected_concepts)
 

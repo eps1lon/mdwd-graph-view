@@ -69,7 +69,7 @@
             //"@type": "nw:OrderDetails",
             "@id": "nwa:OrderDetails0"
         }]).then(graph => {
-            graph_vis.showGraph(graph)
+            //graph_vis.showGraph(graph)
         })
     })
 
