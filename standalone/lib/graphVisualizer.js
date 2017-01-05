@@ -249,7 +249,7 @@
             // get selected
             $jit.Graph.Util.eachNode(jit.graph, function (node) {
                 if (node.data['$selected']) {
-                    selected_concepts.push(ldToArtefact(node.data))
+                    selected_concepts.push(node.data)
                 }
             })
 
@@ -260,6 +260,7 @@
          * fires conceptsSelected signla
          */
         this.conceptsSelected = function () {
+            // TODO OPTIMIZE only return uris
             var selected_concepts = this.getSelectedConcepts()
 
             console.log('conceptsSelected fired with', selected_concepts)
