@@ -8,6 +8,8 @@
      */
     var schema = $window.northwind || console.warn('no schema defined')
 
+    var aboxQuery = $window.abox_query
+
     $window.GraphVisualizer = function (jqueryContext) {
         var that = this
         var $dom = jqueryContext
@@ -23,9 +25,21 @@
         var simulation
         var color = d3.scaleOrdinal(d3.schemeCategory20);
 
-        console.log(width, height)
-
         var concepts_selected_listeners = []
+
+        var links = new Promise((fulfill, reject) => {
+            aboxQuery({
+                "@type": "rdf:Statement"
+            }).then((statements) => {
+                fulfill(statements.map(statement => {
+                    return {
+                        source: statement['rdf:subject']['@id'],
+                        target: statement['rdf:object']['@id'],
+                        value: statement['ia:hasWeight'] * 100 | 0
+                    }
+                }))
+            })
+        })
 
         // the graphlayout TODO: different layouts as constants
         var layout = null
@@ -40,7 +54,9 @@
 
         this.init = function () {
             simulation = d3.forceSimulation()
-                .force("link", d3.forceLink().id(function(d) { return d.id; }))
+                .force("link", d3.forceLink()
+                                 .id(function(d) { return d.id; })
+                                 .distance(l => l.value))
                 .force("charge", d3.forceManyBody())
                 .force("center", d3.forceCenter(width / 2, height / 2));
 
@@ -82,47 +98,59 @@
         this.showGraph = function (schema) {
             var graph = this.parseGraphD3(schema)
 
-            console.log(graph, graph.nodes, graph.links)
+            //console.log(nodes)
 
+            // clear
             svg.selectAll('*').remove()
 
-            var link = svg.append("g")
-                .attr("class", "links")
-                .selectAll("line")
-                .data(graph.links)
-                .enter().append("line")
-                .attr("stroke-width", function(d) { return Math.sqrt(d.value); });
+            links.then(function (all_links) {
+                var nodes = graph.nodes
 
-            var node = svg.append("g")
-                .attr("class", "nodes")
-                .selectAll("circle")
-                .data(graph.nodes)
-                .enter().append("circle")
-                .attr("r", 5)
-                .attr("fill", function(d) { return color(d.group); })
+                // filter only relevant links
+                var links = all_links.filter(link => {
+                    return nodes.find(n => n.id == link.source || n.id == link.target)
+                }).concat(graph.links)
 
+                console.log(nodes, links)
 
-            node.append("title")
-                .text(function(d) { return d.id; });
+                // nodes
+                var node = svg.append("g")
+                    .attr("class", "nodes")
+                    .selectAll("circle")
+                    .data(nodes)
+                    .enter().append("circle")
+                    .attr("r", 5)
+                    .attr("fill", function(d) { return color(d.group); })
 
-            simulation
-                .nodes(graph.nodes)
-                .on("tick", ticked);
+                var link = svg.append("g")
+                    .attr("class", "links")
+                    .selectAll("line")
+                    .data(links)
+                    .enter().append("line")
+                    .attr("stroke-width", function(d) { return Math.sqrt(d.value/10); });
 
-            simulation.force("link")
-                .links(graph.links);
+                node.append("title")
+                    .text(function(d) { return d.id; });
 
-            function ticked() {
-                link
-                    .attr("x1", function(d) { return d.source.x; })
-                    .attr("y1", function(d) { return d.source.y; })
-                    .attr("x2", function(d) { return d.target.x; })
-                    .attr("y2", function(d) { return d.target.y; });
+                simulation
+                    .nodes(nodes)
+                    .on("tick", ticked);
 
-                node
-                    .attr("cx", function(d) { return d.x; })
-                    .attr("cy", function(d) { return d.y; });
-            }
+                simulation.force("link")
+                    .links(links);
+
+                function ticked() {
+                    link
+                        .attr("x1", function(d) { return d.source.x; })
+                        .attr("y1", function(d) { return d.source.y; })
+                        .attr("x2", function(d) { return d.target.x; })
+                        .attr("y2", function(d) { return d.target.y; });
+
+                    node
+                        .attr("cx", function(d) { return d.x; })
+                        .attr("cy", function(d) { return d.y; });
+                }
+            })
         }
 
         /**
@@ -131,8 +159,6 @@
          */
         this.showDomain = function (domains) {
             console.log('showDomain caught with', domains)
-
-            // remove conceptcluster from graph that are not included
 
             // query Things contained in Conceptcluster
             northwind.byUris(domains.map(d => d.uri)).then(function (results) {
@@ -176,90 +202,27 @@
         }
 
         /**
-         * parses our schema graph into a strcture thats readable by infovis
-         * @param graph our graph as defined in the schema
-         * @returns {Graph}
+         * flattens the hierarchy, u still need the links
+         *
+         * @param results
+         * @returns {Array}
          */
-        this.parseGraphJit = function (graph) {
-            console.log('parseGraph', JSON.parse(JSON.stringify(graph)))
-
-            /**
-             * the extended json for infovis
-             * see https://philogb.github.io/jit/static/v20/Docs/files/Loader/Loader-js.html#Loader.js
-             * @type {Array}
-             */
-            var json = []
-
-            /**
-             * nodes that need to be walked
-             * queue type LIFO
-             * @type {Array}
-             */
-            var unparsed = JSON.parse(JSON.stringify(graph)) // clone
-
-            var visited = new Set()
-
-            while (unparsed.length) {
-                var artefact = unparsed.shift()
-
-                //console.log('walk', artefact)
-
-                if (!visited.has(artefact.uri)) {
-                    visited.add(artefact.uri)
-
-                    var adjacencies = artefact.relatedArtefacts
-
-                    // duck typing
-                    if (artefact.subclasses) { // Class
-                        adjacencies.push(...artefact.subclasses)
-                        adjacencies.push(...artefact.individuals)
-                    } else if (artefact.concepts) { // ConceptCluster
-                        adjacencies.push(...artefact.concepts)
-                    }
-                    // walk the adjacents
-                    unparsed.push(...adjacencies)
-
-                    if (!artefact.type) console.log(artefact.uri)
-
-                    var json_node = {
-                        id: uriToDomId(artefact.uri),
-                        label: artefact.label,
-                        data: Object.assign(artefact, {
-                            // some number bases on the chars of type as hex
-                            '$color': '#' + ([...(artefact.type || artefact.uri)].reduce((s, c) => s * c.charCodeAt() % (1<<24), 1)).toString(16),
-                            '$colorBasedOn': 'type' // legend helper
-                        }),
-                        adjacencies: adjacencies.map(a => {
-                            return {
-                                nodeTo: uriToDomId(a.uri),
-                                data: Object.assign(a, {
-                                    // FIXME it's ignored, overridable=true will use node colors
-                                    '$color': 'blue'
-                                })
-                            }
-                        })
-                    }
-
-                    json.push(json_node)
-                }
-            }
-
-            // TODO infovis hypertree needs a connected graph, disconnected graphs cannot be drawn nicely
-            // thats currently not guaranteed
-            //console.log(json.map(n => n.id))
-
-            return json
-        }
-
-
         this.parseGraphD3 = function (results) {
+            /**
+             * creates a d3 link between nodes
+             * @param n1
+             * @param n2
+             * @returns {{source: (*|string|string), target: (*|string|string), value: number}}
+             */
             var createLink = (n1, n2) => {
                 return {
-                    source: uriToDomId(n1.uri),
-                    target: uriToDomId(n2.uri),
-                    value: 1 // TODO
+                    source: n1.uri,
+                    target: n2.uri,
+                    value: 100
                 }
             }
+
+            var mapLink = (source, targets) => targets.map(target => createLink(source, target))
             /**
              * nodes that need to be walked
              * queue type LIFO
@@ -271,7 +234,7 @@
             var nodes = []
             var links = []
 
-            console.log(unparsed)
+            //console.log(unparsed)
 
             while (unparsed.length) {
                 var node = unparsed.shift()
@@ -280,7 +243,7 @@
                     visited.add(node.uri)
 
                     var node_d3 = {
-                        id: uriToDomId(node.uri),
+                        id: node.uri,
                         group: 1
                     }
 
@@ -288,20 +251,17 @@
 
                     if (node.subclasses !== undefined) {
                         unparsed.push(...node.subclasses, ...node.individuals)
-                        links.push(
-                            ...node.subclasses.map(n2 => createLink(node, n2)),
-                            ...node.individuals.map(n2 => createLink(node, n2))
-                        )
+                        links.push(...mapLink(node, node.subclasses), ...mapLink(node, node.individuals))
                     } else if (node.concepts !== undefined) {
                         unparsed.push(...node.concepts)
-                        links.push(...node.concepts.map(n2 => createLink(node, n2)))
+                        links.push(...mapLink(node, node.concepts))
                     }
                 }
             }
 
             return {
-                links: links,
-                nodes: nodes
+                nodes: nodes,
+                links: links
             }
         }
     }
