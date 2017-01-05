@@ -28,7 +28,7 @@
         var that = this
 
         // create jit graph
-        var jit = new $jit.Hypertree({
+        var jit = new $jit.ForceDirected({
             injectInto: $graph.attr('id'),
             height: $graph.height(),
             width: $graph.width(),
@@ -73,8 +73,7 @@
                             }
                         })
 
-                        if (jit.animate) jit.animate()
-                        else jit.refresh()
+                        that.refresh()
                         //jit.select(jit.root);
 
                         // fire change handle
@@ -103,6 +102,18 @@
 
                         // TODO semantic zoom
                         console.log(node)
+
+                        if (node.collapsed) {
+                            jit.op.expand(node, {
+
+                            })
+                        } else {
+                            jit.op.contract(node, {
+
+                            })
+                        }
+
+                        that.refresh()
                     }
                 }
             },
@@ -167,10 +178,6 @@
             }
         })
 
-        var resolveForJit = function (graph) {
-
-        }
-
         this.init = function () {
             $(window).resize(function () {
                 jit.canvas.resize($graph.width(), $graph.height())
@@ -202,6 +209,10 @@
 
         this.init()
 
+        this.refresh = function () {
+            if (jit.animate) jit.animate()
+            else jit.refresh()
+        }
 
         // class functions
         this.showGraph = function (graph) {
@@ -313,6 +324,7 @@
                     // duck typing
                     if (artefact.subclasses) { // Class
                         adjacencies.push(...artefact.subclasses)
+                        adjacencies.push(...artefact.individuals)
                     } else if (artefact.concepts) { // ConceptCluster
                         adjacencies.push(...artefact.concepts)
                     }

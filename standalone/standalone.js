@@ -36,7 +36,7 @@
         domains.then(domains => {
             domain_selector.displayDomains(domains)
 
-            /* TODO select first for testing
+            //* TODO select first for testing
             $('#availableDomains li:visible:first input[type=checkbox]')
                 .prop('checked', true)
                 .trigger('change')//*/
