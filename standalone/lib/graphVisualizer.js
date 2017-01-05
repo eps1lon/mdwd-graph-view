@@ -216,9 +216,7 @@
 
         // class functions
         this.showGraph = function (graph) {
-            console.log('showGraph caught with', graph)
-            var jit_graph = this.parseGraph(graph)
-            console.log('parsed to', jit_graph)
+
 
             if (jit_graph.length) {
                 jit.loadJSON(jit_graph)
@@ -288,11 +286,11 @@
         }
 
         /**
-         * parses our schema graph into a strcture thats readable by our used api
+         * parses our schema graph into a strcture thats readable by infovis
          * @param graph our graph as defined in the schema
          * @returns {Graph}
          */
-        this.parseGraph = function (graph) {
+        this.parseGraphJit = function (graph) {
             console.log('parseGraph', JSON.parse(JSON.stringify(graph)))
 
             /**
@@ -361,6 +359,10 @@
             //console.log(json.map(n => n.id))
 
             return json
+        }
+
+        this.parseGraphD3 = function (results) {
+
         }
     }
 })(this)
