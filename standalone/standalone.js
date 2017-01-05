@@ -18,26 +18,7 @@
          * values later available as []<ConceptCluster>
          * @type {Promise}
          */
-        var domains = new Promise((fulfill, reject) => {
-            abox_query([{
-                "@type": "ia:ConceptCluster"
-            }]).then(graph => {
-                fulfill(graph.map(node => {
-                    // ConceptCluster extends Artefact
-                    var concept_cluster = createData('ConceptCluster')
-
-                    //console.log(node)
-
-                    // fill in data from abox
-                    concept_cluster.uri = node['@id']
-                    concept_cluster.name = node['ia:hasClusterID']
-                    concept_cluster.type = node['@type']
-                    concept_cluster.label = node['rdfs:label']['@value']
-
-                    return concept_cluster
-                }))
-            })
-        })
+        var domains = window.northwind.byType('ia:ConceptCluster')
 
         var domain_selector = new DomainSelector($('#domainSelector'))
         var graph_vis = new GraphVisualizer($('#graphVis'))

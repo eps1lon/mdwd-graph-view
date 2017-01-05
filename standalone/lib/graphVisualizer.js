@@ -1,9 +1,15 @@
 (function ($window) {
     var $ = $window.jQuery
 
-    var aboxQuery = window.abox_query
+    // this is basically our access to the abox pressed in our schema
+    /**
+     *
+     * @type {SchemaFactory}
+     */
+    var schema = $window.northwind || console.warn('no schema defined')
 
     $window.GraphVisualizer = function (jqueryContext) {
+        var that = this
         var $dom = jqueryContext
 
         var $minimap = $('#graphMinimap', $dom)
@@ -15,21 +21,8 @@
         // the graphlayout TODO: different layouts as constants
         var layout = null
 
-        var graphToDomId = function (graph_id) {
-            return graph_id.replace(':', '_')
-        }
-
-        /**
-         * generates a Concept object as described in the data schema
-         * https://trac.mmt.inf.tu-dresden.de/CRUISe/wiki/applications/infoapp#DatenschematafürKomponentenschnittstellen
-         *
-         * @param jsonld
-         */
-        var ldToArtefact = function (jsonld) {
-            return Object.assign(window.createData('Artefact'), {
-                'uri': jsonld['@id'],
-                'type': jsonld['@type']
-            })
+        var uriToDomId = function (uri) {
+            return uri.replace(':', '_')
         }
 
         var that = this
@@ -134,36 +127,7 @@
              * @param node
              */
             onCreateLabel: function (domElement, node) {
-                var node_name = node.name || node.id
-                var jsonld = node.data
-
-                // specific name attr
-                var name_of_type = {
-                    // node type => name attribute
-                    'ia:Document': 'dc:title',
-                    'nw:Supplier': 'nw:hasTitle'
-                }
-
-                if (jsonld['@type'] in name_of_type) {
-                    node_name = jsonld[name_of_type[jsonld['@type']]]
-                } else if (jsonld['@type'] === 'ia:ConceptCluster') {
-                    node_name = jsonld['rdfs:label']['@value']
-                } else if (jsonld['nw:hasFirstName']) {
-                    node_name = [jsonld['nw:hasFirstName'], jsonld['nw:hasLastName']].join(' ')
-                } else {
-                    // generic
-                    for (var name_attr of ['nw:hasName']) {
-                        if (name_attr in jsonld) {
-                            node_name = jsonld[name_attr]
-                        }
-                    }
-                }
-
-                if (node_name === undefined) {
-                    console.warn('no name attr found for ' + jsonld['@id'], jsonld)
-                }
-
-                //$(domElement).text(node_name)
+                $(domElement).text(node.label)
             },
             onComplete: function () {
                 // create legend
@@ -205,6 +169,10 @@
             }
         })
 
+        var resolveForJit = function (graph) {
+
+        }
+
         this.init = function () {
             $(window).resize(function () {
                 jit.canvas.resize($graph.width(), $graph.height())
@@ -225,7 +193,7 @@
 
                 // get center of concepts
                 for (var concept of concepts) {
-                    var node = $jit.Graph.Util.getNode(jit.graph, graphToDomId(concept.uri))
+                    var node = $jit.Graph.Util.getNode(jit.graph, uriToDomId(concept.uri))
                     positions.x.push(node.pos.x)
                     positions.y.push(node.pos.y)
                 }
@@ -238,14 +206,21 @@
 
 
         // class functions
-        this.showGraph = function (jsonld_graph) {
-            console.log('showGraph caught with', jsonld_graph)
+        this.showGraph = function (graph) {
+            console.log('showGraph caught with', graph)
+            var jit_graph = this.parseGraph(graph)
+            console.log('parsed to', jit_graph)
 
-            jit.loadJSON(aboxParse(jsonld_graph))
+            if (jit_graph.length) {
+                jit.loadJSON(jit_graph)
 
-            jit.refresh()
-            jit.animate()
-            jit.controller.onComplete()
+                jit.refresh()
+                jit.animate()
+                jit.controller.onComplete()
+            } else {
+                console.log('empty graph')
+            }
+
         }
 
         /**
@@ -263,22 +238,8 @@
             jit.canvas.clear()
 
             // query Things contained in Conceptcluster
-            // TODO is there a way to query `where in` instead of iterating over list?
-
-            // list of promises
-            queries = []
-            for (var domain of domains) {
-                queries.push(aboxQuery([{
-                    "@embed": "@always",
-                    "@id": domain.uri
-                }]))
-            }
-
-            Promise.all(queries).then(function (results) {
-                if (results.length) {
-                    that.showGraph([].concat(...results)) // flattened array
-                }
-
+            northwind.byUris(domains.map(d => d.uri)).then(function (results) {
+                that.showGraph(results)
             })
         }
 
@@ -314,6 +275,81 @@
          */
         this.addConceptsSelectedListener = function (cb) {
             concepts_selected_listeners.push(cb)
+        }
+
+        /**
+         * parses our schema graph into a strcture thats readable by our used api
+         * @param graph our graph as defined in the schema
+         * @returns {Graph}
+         */
+        this.parseGraph = function (graph) {
+            console.log('parseGraph', JSON.parse(JSON.stringify(graph)))
+
+            /**
+             * the extended json for infovis
+             * see https://philogb.github.io/jit/static/v20/Docs/files/Loader/Loader-js.html#Loader.js
+             * @type {Array}
+             */
+            var json = []
+
+            /**
+             * nodes that need to be walked
+             * queue type LIFO
+             * @type {Array}
+             */
+            var unparsed = JSON.parse(JSON.stringify(graph)) // clone
+
+            var visited = new Set()
+
+            while (unparsed.length) {
+                var artefact = unparsed.shift()
+
+                //console.log('walk', artefact)
+
+                if (!visited.has(artefact.uri)) {
+                    visited.add(artefact.uri)
+
+                    var adjacencies = artefact.relatedArtefacts
+
+                    // duck typing
+                    if (artefact.subclasses) { // Class
+                        adjacencies.push(...artefact.subclasses)
+                    } else if (artefact.concepts) { // ConceptCluster
+                        adjacencies.push(...artefact.concepts)
+                    }
+                    // walk the adjacents
+                    unparsed.push(...adjacencies)
+
+                    if (!artefact.type) console.log(artefact.uri)
+
+                    var json_node = {
+                        id: uriToDomId(artefact.uri),
+                        label: artefact.label,
+                        data: Object.assign(artefact, {
+                            // some number bases on the chars of type as hex
+                            '$color': '#' + ([...(artefact.type || artefact.uri)].reduce((s, c) => s * c.charCodeAt() % (1<<24), 1)).toString(16),
+                            '$colorBasedOn': 'type' // legend helper
+                        }),
+                        adjacencies: adjacencies.map(a => {
+                            return {
+                                nodeTo: uriToDomId(a.uri),
+                                data: Object.assign(a, {
+                                    // FIXME it's ignored, overridable=true will use node colors
+                                    '$color': 'blue'
+                                })
+                            }
+                        })
+                    }
+
+                    json.push(json_node)
+                }
+            }
+
+            // TODO infovis hypertree needs a connected graph, disconnected graphs cannot be drawn nicely
+            // thats currently not guaranteed
+            //console.log(json.map(n => n.id))
+
+            return json
         }
     }
 })(this)

@@ -75,6 +75,7 @@
             for (var i = 0; i < domains.length; ++i) {
                 // we use the scope of let here so that jquery handles can still access it
                 // usage of var would lead to access of the last instantiated concept_cluster
+                // look up javascript closure, var, let for further reading
                 let concept_cluster = domains[i]
 
                 // clone(withChangeHandles?)
