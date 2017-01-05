@@ -28,7 +28,7 @@
         var that = this
 
         // create jit graph
-        var jit = new $jit.ForceDirected({
+        var jit = new $jit.Hypertree({
             injectInto: $graph.attr('id'),
             height: $graph.height(),
             width: $graph.width(),
@@ -73,7 +73,8 @@
                             }
                         })
 
-                        jit.animate();
+                        if (jit.animate) jit.animate()
+                        else jit.refresh()
                         //jit.select(jit.root);
 
                         // fire change handle
@@ -100,11 +101,8 @@
                         // and not permanent
                         $('#detailView').html('<pre>' + JSON.stringify(node.data, null, 4) + '</pre>')
 
-                        // centering onclick
-                        // ForceDirected has no centering
-                        if ($.isFunction(jit.onClick)) {
-                            jit.onClick(node.id)
-                        }
+                        // TODO semantic zoom
+                        console.log(node)
                     }
                 }
             },
@@ -215,7 +213,7 @@
                 jit.loadJSON(jit_graph)
 
                 jit.refresh()
-                jit.animate()
+                if (jit.animate) jit.animate()
                 jit.controller.onComplete()
             } else {
                 console.log('empty graph')
