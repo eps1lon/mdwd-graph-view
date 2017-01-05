@@ -123,7 +123,7 @@
             'EXTENDS': 'Artefact',
             'build': function (schema, jsonld) {
                 if (jsonld['@type'] == 'nw:Product') {
-                    schema.superclasses.push(jsonld['nw:hasProductCategory']['@id'])
+                    schema.superclasses.push(jsonld['nw:hasProductCategory'])
                 } else if (jsonld['@type'] == 'nw:ProductCategory') {
                     // TODO reference to products
                 } else {

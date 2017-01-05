@@ -16,6 +16,15 @@
         var $graph = $('#domainGraph', $dom)
         var $graphLegend = $('#graphLegend', $dom)
 
+        // d3
+        var svg = d3.select('#domainGraph')
+        var width = +$graph.width()
+        var height = +$graph.height()
+        var simulation
+        var color = d3.scaleOrdinal(d3.schemeCategory20);
+
+        console.log(width, height)
+
         var concepts_selected_listeners = []
 
         // the graphlayout TODO: different layouts as constants
@@ -28,159 +37,15 @@
         var that = this
 
         // create jit graph
-        var jit = new $jit.ForceDirected({
-            injectInto: $graph.attr('id'),
-            height: $graph.height(),
-            width: $graph.width(),
-            //Change the animation transition type
-            transition: $jit.Trans.Circ.easeOut,
-            //animation duration (in milliseconds)
-            duration: 1000,
-            Node: {
-                dim: 10,
-                color: 'red',
-                overridable: true,
-                transform: false
-            },
-            Edge: {
-                lineWidth: 1,
-                color: "red",
-                overridable: false
-            },
-            Events: {
-                enable: true,
-                type: 'Native',
-                onClick: function (node, eventInfo, e) {
-                    var pos = eventInfo.getPos()
-
-                    if (node === false) {
-                        // this doesnt really work
-                        // node = jit.graph.getClosestNodeToPos(new $jit.Complext(pos.x, pos.y))
-                    }
-
-                    // TODO this is our conceptsSelected handle!
-                    if (node !== false) {
-                        // toggle selected
-                        node.data['$selected'] = !node.data['$selected']
-
-                        // get selected
-                        $jit.Graph.Util.eachNode(jit.graph, function (node) {
-                            // TODO selected style
-                            if (node.data['$selected']) {
-                                node.data['$type'] = 'triangle'
-                            } else {
-                                node.data['$type'] = node.Config.type
-                            }
-                        })
-
-                        that.refresh()
-                        //jit.select(jit.root);
-
-                        // fire change handle
-                        that.conceptsSelected()
-                    }
-                },
-                /*
-                //Change cursor style when hovering a node
-                onMouseEnter: function() {
-                    jit.canvas.getElement().style.cursor = 'move';
-                },
-                onMouseLeave: function() {
-                    jit.canvas.getElement().style.cursor = '';
-                },
-                //Update node positions when dragged
-                onDragMove: function(node, eventInfo, e) {
-                    var pos = eventInfo.getPos();
-                    node.pos.setc(pos.x, pos.y);
-                    jit.plot();
-                },//*/
-                onRightClick: function (node, eventInfo, e) {
-                    if (node !== false) {
-                        // this is semantically a Tip but Tips are attached to the cursorpointer
-                        // and not permanent
-                        $('#detailView').html('<pre>' + JSON.stringify(node.data, null, 4) + '</pre>')
-
-                        // TODO semantic zoom
-                        console.log(node)
-
-                        if (node.collapsed) {
-                            jit.op.expand(node, {
-
-                            })
-                        } else {
-                            jit.op.contract(node, {
-
-                            })
-                        }
-
-                        that.refresh()
-                    }
-                }
-            },
-            Navigation: {
-                enable: true,
-                type: 'Native', // check events type, got no d&d when type in navigation was not set
-                panning: 'avoid nodes', // 'avoid nodes'
-                zooming: 20
-            },
-            Tips: {
-                enable: true,
-                onShow: function (tip, node) {
-                    // thats where Events.onClick should be in a perfect world
-                }
-            },
-            /**
-             * extracts the name for the node from the jsonld data
-             *
-             * @param domElement
-             * @param node
-             */
-            onCreateLabel: function (domElement, node) {
-                $(domElement).text(node.label)
-            },
-            onComplete: function () {
-                // create legend
-                var $legend = $('dl', $graphLegend)
-
-                // remove old
-                $('*:not(.template)', $legend).remove()
-
-                // create map
-                var colors = new Set()
-
-                // loop through node and map $color => $colorBasedOn
-                $jit.Graph.Util.eachNode(jit.graph, function (node) {
-                    var color = node.data['$color'] || node.Node.color
-
-                    if (!colors.has(color)) {
-                        colors.add(color)
-
-                        var legend = 'Unknown'
-                        if (node.data['$colorBasedOn']) {
-                            legend
-                                = node.data['$colorBasedOn'].split(',')
-                                                            .map(basedOn => node.data[basedOn])
-                        }
-
-                        var $color = $('.color.template', $legend).clone(true)
-                                                                  .removeClass('template')
-                        var $desc = $('.colorLegend.template', $legend).clone(true)
-                                                                       .removeClass('template')
-
-                        $color.css('background-color', color)
-                        $desc.text(legend)
-
-                        $legend.append($color, $desc)
-                    }
-                })
-            },
-            onPlaceLabel: function (domElement, node) {
-            }
-        })
 
         this.init = function () {
+            simulation = d3.forceSimulation()
+                .force("link", d3.forceLink().id(function(d) { return d.id; }))
+                .force("charge", d3.forceManyBody())
+                .force("center", d3.forceCenter(width / 2, height / 2));
+
             $(window).resize(function () {
-                jit.canvas.resize($graph.width(), $graph.height())
+                //jit.canvas.resize($graph.width(), $graph.height())
             })
 
             $('h2', $graphLegend).click(function () {
@@ -209,25 +74,55 @@
 
         this.init()
 
-        this.refresh = function () {
-            if (jit.animate) jit.animate()
-            else jit.refresh()
+        this.refreshCanvas = function () {
+            console.warn('refreshCanvas not implemented')
         }
 
         // class functions
-        this.showGraph = function (graph) {
+        this.showGraph = function (schema) {
+            var graph = this.parseGraphD3(schema)
+
+            console.log(graph, graph.nodes, graph.links)
+
+            svg.selectAll('*').remove()
+
+            var link = svg.append("g")
+                .attr("class", "links")
+                .selectAll("line")
+                .data(graph.links)
+                .enter().append("line")
+                .attr("stroke-width", function(d) { return Math.sqrt(d.value); });
+
+            var node = svg.append("g")
+                .attr("class", "nodes")
+                .selectAll("circle")
+                .data(graph.nodes)
+                .enter().append("circle")
+                .attr("r", 5)
+                .attr("fill", function(d) { return color(d.group); })
 
 
-            if (jit_graph.length) {
-                jit.loadJSON(jit_graph)
+            node.append("title")
+                .text(function(d) { return d.id; });
 
-                jit.refresh()
-                if (jit.animate) jit.animate()
-                jit.controller.onComplete()
-            } else {
-                console.log('empty graph')
+            simulation
+                .nodes(graph.nodes)
+                .on("tick", ticked);
+
+            simulation.force("link")
+                .links(graph.links);
+
+            function ticked() {
+                link
+                    .attr("x1", function(d) { return d.source.x; })
+                    .attr("y1", function(d) { return d.source.y; })
+                    .attr("x2", function(d) { return d.target.x; })
+                    .attr("y2", function(d) { return d.target.y; });
+
+                node
+                    .attr("cx", function(d) { return d.x; })
+                    .attr("cy", function(d) { return d.y; });
             }
-
         }
 
         /**
@@ -238,11 +133,6 @@
             console.log('showDomain caught with', domains)
 
             // remove conceptcluster from graph that are not included
-
-            // add new graph for domain
-
-            // for now we use the empty-create crowbar
-            jit.canvas.clear()
 
             // query Things contained in Conceptcluster
             northwind.byUris(domains.map(d => d.uri)).then(function (results) {
@@ -361,8 +251,58 @@
             return json
         }
 
-        this.parseGraphD3 = function (results) {
 
+        this.parseGraphD3 = function (results) {
+            var createLink = (n1, n2) => {
+                return {
+                    source: uriToDomId(n1.uri),
+                    target: uriToDomId(n2.uri),
+                    value: 1 // TODO
+                }
+            }
+            /**
+             * nodes that need to be walked
+             * queue type LIFO
+             * @type {Array}
+             */
+            var unparsed = JSON.parse(JSON.stringify(results)) // clone
+            var visited = new Set()
+
+            var nodes = []
+            var links = []
+
+            console.log(unparsed)
+
+            while (unparsed.length) {
+                var node = unparsed.shift()
+
+                if (!visited.has(node.uri) && node.uri !== undefined) {
+                    visited.add(node.uri)
+
+                    var node_d3 = {
+                        id: uriToDomId(node.uri),
+                        group: 1
+                    }
+
+                    nodes.push(node_d3)
+
+                    if (node.subclasses !== undefined) {
+                        unparsed.push(...node.subclasses, ...node.individuals)
+                        links.push(
+                            ...node.subclasses.map(n2 => createLink(node, n2)),
+                            ...node.individuals.map(n2 => createLink(node, n2))
+                        )
+                    } else if (node.concepts !== undefined) {
+                        unparsed.push(...node.concepts)
+                        links.push(...node.concepts.map(n2 => createLink(node, n2)))
+                    }
+                }
+            }
+
+            return {
+                links: links,
+                nodes: nodes
+            }
         }
     }
 })(this)

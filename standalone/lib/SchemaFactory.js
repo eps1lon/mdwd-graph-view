@@ -45,7 +45,7 @@
                     "@id": uri,
                     "@embed": "@always"
                 }]).then(graph => {
-                    console.log(graph)
+                    //console.log(graph)
                     fulfill(graph.map(g => that.fromJsonld(g)))
                 })
             })
