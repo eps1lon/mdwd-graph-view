@@ -53,13 +53,6 @@
         // create jit graph
 
         this.init = function () {
-            simulation = d3.forceSimulation()
-                .force("link", d3.forceLink()
-                                 .id(function(d) { return d.id; })
-                                 .distance(l => l.value))
-                .force("charge", d3.forceManyBody())
-                .force("center", d3.forceCenter(width / 2, height / 2));
-
             $(window).resize(function () {
                 //jit.canvas.resize($graph.width(), $graph.height())
             })
@@ -99,6 +92,14 @@
             var graph = this.parseGraphD3(schema)
 
             //console.log(nodes)
+
+            // start new sim
+            simulation = d3.forceSimulation()
+                .force("link", d3.forceLink()
+                    .id(function(d) { return d.id; })
+                    .distance(l => l.value))
+                .force("charge", d3.forceManyBody())
+                .force("center", d3.forceCenter(width / 2, height / 2));
 
             // clear
             svg.selectAll('*').remove()
