@@ -25,6 +25,8 @@
             return uri.replace(':', '_')
         }
 
+        var clone = o => JSON.parse(JSON.stringify(o))
+
         var that = this
 
         // create jit graph
@@ -44,8 +46,8 @@
             },
             Edge: {
                 lineWidth: 1,
-                color: "red",
-                overridable: false
+                color: "blue",
+                overridable: true
             },
             Events: {
                 enable: true,
@@ -293,7 +295,7 @@
          * @returns {Graph}
          */
         this.parseGraph = function (graph) {
-            console.log('parseGraph', JSON.parse(JSON.stringify(graph)))
+            //console.log('parseGraph', JSON.parse(JSON.stringify(graph)))
 
             /**
              * the extended json for infovis
@@ -333,21 +335,25 @@
 
                     if (!artefact.type) console.log(artefact.uri)
 
+                    var color = aretefact => ([...(artefact.type || artefact.uri)].reduce((s, c) => s * c.charCodeAt() % (1<<24), 1)).toString(16)
+
                     var json_node = {
                         id: uriToDomId(artefact.uri),
                         label: artefact.label,
                         data: Object.assign(artefact, {
                             // some number bases on the chars of type as hex
-                            '$color': '#' + ([...(artefact.type || artefact.uri)].reduce((s, c) => s * c.charCodeAt() % (1<<24), 1)).toString(16),
+                            '$color': '#' + color(artefact),
                             '$colorBasedOn': 'type' // legend helper
                         }),
                         adjacencies: adjacencies.map(a => {
                             return {
                                 nodeTo: uriToDomId(a.uri),
-                                data: Object.assign(a, {
-                                    // FIXME it's ignored, overridable=true will use node colors
-                                    '$color': 'blue'
-                                })
+                                // if you want the add the artefact to the
+                                // adj data clone it or the additional data will
+                                // be overridden
+                                data: {
+                                    '$lineWidth': a.type == "ia:Document" ? 1 : 3
+                                }
                             }
                         })
                     }
@@ -359,6 +365,8 @@
             // TODO infovis hypertree needs a connected graph, disconnected graphs cannot be drawn nicely
             // thats currently not guaranteed
             //console.log(json.map(n => n.id))
+
+            console.log(json)
 
             return json
         }
