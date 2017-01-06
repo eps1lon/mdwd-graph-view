@@ -18,13 +18,6 @@
         var $graph = $('#domainGraph', $dom)
         var $graphLegend = $('#graphLegend', $dom)
 
-        // d3
-        var svg = d3.select('#domainGraph')
-        var width = +$graph.width()
-        var height = +$graph.height()
-        var simulation
-        var color = d3.scaleOrdinal(d3.schemeCategory20);
-
         var concepts_selected_listeners = []
 
         var links = new Promise((fulfill, reject) => {
@@ -50,7 +43,19 @@
 
         var that = this
 
-        // create jit graph
+        // d3
+        var width = +$graph.width()
+        var height = +$graph.height()
+        var simulation
+        var color = d3.scaleOrdinal(d3.schemeCategory20);
+        var zoomed = function () {
+            svg.attr("transform", d3.event.transform);//The zoom and panning is affecting my G element which is a child of SVG
+        }
+        var zoom = d3.zoom()
+            .scaleExtent([1, 10])
+            .on("zoom", zoomed);
+
+        var svg = d3.select('#domainGraph')
 
         this.init = function () {
             $(window).resize(function () {
@@ -63,22 +68,7 @@
 
             var median = list => list.length ? list.reduce((s, n) => s + n, 0) / list.length : 0
 
-            $('#graphFocus').click(function () {
-                var concepts = that.getSelectedConcepts()
-                var positions = {
-                    x: [],
-                    y: []
-                }
-
-                // get center of concepts
-                for (var concept of concepts) {
-                    var node = $jit.Graph.Util.getNode(jit.graph, uriToDomId(concept.uri))
-                    positions.x.push(node.pos.x)
-                    positions.y.push(node.pos.y)
-                }
-
-                // TODO canvas pos
-            })
+            svg.call(zoom)
         }
 
         this.init()
