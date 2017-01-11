@@ -55,7 +55,7 @@
             .scaleExtent([1, 10])
             .on("zoom", zoomed);
 
-        var svg = d3.select('#domainGraph')
+        var svg = d3.select(`#${$graph.attr('id')}`).append("svg:svg")
 
         this.init = function () {
             $(window).resize(function () {
@@ -98,11 +98,21 @@
                 var nodes = graph.nodes
 
                 // filter only relevant links
+                // because we dont know how the query the box with a filter
                 var links = all_links.filter(link => {
                     return nodes.find(n => n.id == link.source || n.id == link.target)
                 }).concat(graph.links)
 
                 console.log(nodes, links)
+
+                var link = svg.append("g")
+                    .attr("class", "links")
+                    .selectAll("line")
+                    .data(links)
+                    .enter().append("line")
+                    .attr("stroke-width", function(d) {
+                        return Math.sqrt(d.value/10);
+                    });
 
                 // nodes
                 var node = svg.append("g")
@@ -111,17 +121,9 @@
                     .data(nodes)
                     .enter().append("circle")
                     .attr("r", 5)
-                    .attr("fill", function(d) { return color(d.group); })
-
-                var link = svg.append("g")
-                    .attr("class", "links")
-                    .selectAll("line")
-                    .data(links)
-                    .enter().append("line")
-                    .attr("stroke-width", function(d) { return Math.sqrt(d.value/10); });
-
-                node.append("title")
-                    .text(function(d) { return d.id; });
+                    .attr("fill", function(node) {
+                        return color(node.data.type);
+                    })
 
                 simulation
                     .nodes(nodes)
@@ -235,7 +237,7 @@
 
                     var node_d3 = {
                         id: node.uri,
-                        group: 1
+                        data: node
                     }
 
                     nodes.push(node_d3)
