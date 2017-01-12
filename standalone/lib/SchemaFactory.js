@@ -1,38 +1,39 @@
 (function (window) {
     'use strict';
-    const EXTENDS_IDENT = 'EXTENDS' // on change pls check schema definition in const schema
+    const EXTENDS_IDENT = 'EXTENDS'; // on change pls check schema definition in const schema
 
-    var aboxQuery = window.abox_query || console.warn('abox_query not defined')
+    const aboxQuery = window.aboxQuery || console.warn('abox_query not defined');
 
     /**
      * Generates a factory from the schema that can generate data types from an abox
-     * @param schemas {Map(...data_type => {'defaults' => Map(...key => default_value)}, 'extends': data_type | undefined, 'build': function (data, jsonld)}
      * @constructor
+     * @param schemas
+     * @param schema_type
      */
     window.SchemaFactory = function (schemas, schema_type) {
-        var that = this
+        const that = this;
 
-        this.schemas = schemas
-        this.schema_type = schema_type
+        this.schemas = schemas;
+        this.schema_type = schema_type;
 
-        var clone = o => JSON.parse(JSON.stringify(o))
+        const clone = o => JSON.parse(JSON.stringify(o));
 
         /**
          * computes the inheritance chain for a given type
          * @param type
          * @returns {Array}
          */
-        var extensionStack = function (type) {
-            var stack = []
+        const extensionStack = function (type) {
+            const stack = [];
 
-            var schema
+            let schema;
             while (schema = schemas[type]) {
-                stack.push(type)
-                type = schema[EXTENDS_IDENT]
+                stack.push(type);
+                type = schema[EXTENDS_IDENT];
             }
 
-            return stack
-        }
+            return stack;
+        };
 
         /**
          * gets this.fromJsonld() as a promise
@@ -40,7 +41,7 @@
          * @returns {Promise}
          */
         this.byUri = function (uri) {
-            return new Promise((fulfill, reject) => {
+            return new Promise((fulfill) => {
                 aboxQuery([{
                     "@id": uri,
                     "@embed": "@always"
@@ -49,16 +50,16 @@
                     fulfill(graph.map(g => that.fromJsonld(g)))
                 })
             })
-        }
+        };
 
         this.byUris = function (uris) {
             // TODO is there a way to query `where in` instead of iterating over list?
-            return new Promise((fulfill, reject) => {
+            return new Promise((fulfill) => {
                 Promise.all(uris.map(uri => that.byUri(uri))).then(function (results) {
-                    fulfill([].concat(...results)) // flattened array
+                    fulfill([].concat(...results)); // flattened array
                 })
             })
-        }
+        };
 
         /**
          * gets []<this.fromJsonld()> in a promise
@@ -66,15 +67,15 @@
          * @returns {Promise}
          */
         this.byType = function (type) {
-            return new Promise((fulfill, reject) => {
-                abox_query([{
+            return new Promise(function (fulfill) {
+                aboxQuery([{
                     "@embed": "@always",
                     "@type": type
-                }]).then(graph => {
-                    fulfill(graph.map(g => that.fromJsonld(g)))
+                }]).then(function (graph) {
+                    fulfill(graph.map(g => that.fromJsonld(g)));
                 })
             })
-        }
+        };
 
         /**
          * creates the data type with default value
@@ -83,7 +84,7 @@
          */
         this.emptyType = function (type) {
             if (schemas.hasOwnProperty(type)) {
-                var data = clone(this.schemas[type].defaults)
+                const data = clone(this.schemas[type].defaults);
 
                 if (this.schemas[type][EXTENDS_IDENT] !== undefined) {
                     // merge
@@ -92,7 +93,7 @@
 
                 return data
             }
-        }
+        };
 
         /**
          * parses the jsonld data into a fitting schema data type
@@ -111,20 +112,20 @@
             }
 
             // get the schema type generally something derived from `@type`
-            var schema_type = this.schema_type(jsonld)
+            let schema_type = this.schema_type(jsonld);
             // default values
-            var schema = this.emptyType(schema_type)
+            let schema = this.emptyType(schema_type);
             // stack 
-            var build_stack = extensionStack(schema_type)
+            const build_stack = extensionStack(schema_type);
 
             //console.log(schema_type, schema, build_stack, jsonld)
 
             // call build for each class in the inheritance chain starting with the superclass
             while (schema_type = build_stack.pop()) {
-                schema = schemas[schema_type].build.call(this, clone(schema), jsonld)
+                schema = schemas[schema_type].build.call(this, clone(schema), jsonld);
             }
 
-            return schema
+            return schema;
         }
     }
-})(this)
+})(this);

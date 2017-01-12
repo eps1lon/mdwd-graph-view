@@ -8,7 +8,7 @@
      */
     const schema = window.northwind || console.warn('no schema defined');
 
-    const aboxQuery = window.abox_query;
+    const aboxQuery = window.aboxQuery;
 
     /**
      * css className for a selected concept

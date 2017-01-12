@@ -1,29 +1,32 @@
 (function (window) {
-    var $ = window.jQuery
+    const $ = window.jQuery;
 
     // export pattern
     window.DomainSelector = function (jqueryContext) {
-        // []<ConceptCluster>
-        var domains = []
+        /**
+         *
+         * @type {Array|ConceptCluster}
+         */
+        let domains = [];
 
         // callbacks
-        var change_listeners = []
+        const change_listeners = [];
 
         // display dom container
-        var $dom = jqueryContext
+        const $dom = jqueryContext;
 
         // closure
-        var that = this
+        const that = this;
 
         // hook change handle
         $('#availableDomains .template .domainCheckbox', $dom).change(function () {
             that.domainsSelected()
-        })
+        });
 
         /**
          * TODO later provided from component context
          */
-        this.renderTargetId = jqueryContext.attr('id')
+        this.renderTargetId = jqueryContext.attr('id');
 
         /**
          * helper to generate a unique id that doesnt collide with another instance of this component
@@ -32,7 +35,7 @@
          */
         this.generateId = function (id) {
             return this.renderTargetId + id
-        }
+        };
 
         /**
          * creates a W3C conform dom id from an uri
@@ -41,19 +44,19 @@
          */
         this.domId = function (uri) {
             return this.generateId(uri.replace(':', '_'))
-        }
+        };
 
         /*
          * fire callback with new domains
          */
         this.domainsSelected = function () {
-            var selected_domains = domains.filter(d => $("#" + this.domId(d.uri), $dom).is(':checked'))
-            console.log('domainsSelected fired with', selected_domains)
+            const selected_domains = domains.filter(d => $("#" + this.domId(d.uri), $dom).is(':checked'));
+            console.log('domainsSelected fired with', selected_domains);
 
-            for (var i = 0; i < change_listeners.length; ++i) {
-                change_listeners[i].call(this, selected_domains)
+            for (const change_listener of change_listeners) {
+                change_listener.call(this, selected_domains);
             }
-        }
+        };
 
         /**
          *  if u want to be signaled on domainsSelected hook here!
@@ -61,39 +64,38 @@
          */
         this.addChangeListener = function (cb) {
             change_listeners.push(cb)
-        }
+        };
 
 
         this.displayDomains = function (new_domains) {
-            console.log('displayDomains caught with', new_domains)
-            domains = new_domains
+            console.log('displayDomains caught with', new_domains);
+            domains = new_domains;
 
-            var $list = $('#availableDomains', $dom)
+            const $list = $('#availableDomains', $dom);
 
-            $('li:not(.template)', $list).remove()
+            $('li:not(.template)', $list).remove();
 
-            for (var i = 0; i < domains.length; ++i) {
+            for (let concept_cluster of domains) {
                 // we use the scope of let here so that jquery handles can still access it
                 // usage of var would lead to access of the last instantiated concept_cluster
                 // look up javascript closure, var, let for further reading
-                let concept_cluster = domains[i]
 
                 // clone(withChangeHandles?)
-                var $container = $('.template', $list).clone(true)
-                $container.removeClass('template')
+                const $container = $('.template', $list).clone(true);
+                $container.removeClass('template');
 
-                var dom_id = this.domId(concept_cluster.uri)
+                const dom_id = this.domId(concept_cluster.uri);
 
-                $('.domainCheckbox', $container).attr('id', dom_id)
-                $('.domainCheckbox', $container).attr('value', concept_cluster.uri)
-                $('.domainLabel', $container).attr('for', dom_id)
-                $('.domainLabel', $container).text(concept_cluster.label)
+                $('.domainCheckbox', $container).attr('id', dom_id);
+                $('.domainCheckbox', $container).attr('value', concept_cluster.uri);
+                $('.domainLabel', $container).attr('for', dom_id);
+                $('.domainLabel', $container).text(concept_cluster.label);
 
                 $container.contextmenu(function () {
-                    $('#detailView').text(JSON.stringify(concept_cluster, null, 4))
+                    $('#detailView').text(JSON.stringify(concept_cluster, null, 4));
 
                     return false
-                })
+                });
 
                 $list.append($container)
             }
@@ -102,4 +104,4 @@
             this.domainsSelected()
         }
     }
-})(this)
+})(this);
