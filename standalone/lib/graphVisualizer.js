@@ -8,7 +8,13 @@
      */
     var schema = $window.northwind || console.warn('no schema defined')
 
-    var aboxQuery = $window.abox_query
+    var aboxQuery = $window.abox_query;
+
+    /**
+     * css className for a selected concept
+     * @type {string}
+     */
+    const class_selected_concept = "selected-concept";
 
     $window.GraphVisualizer = function (jqueryContext) {
         var that = this
@@ -32,7 +38,12 @@
                     }
                 }))
             })
-        })
+        });
+
+        const nodeClicked = function () {
+            $(this).toggleClass(class_selected_concept);
+            that.conceptsSelected();
+        };
 
         // the graphlayout TODO: different layouts as constants
         var layout = null
@@ -64,22 +75,20 @@
 
             $('h2', $graphLegend).click(function () {
                 $('dl', $graphLegend).toggle()
-            })
-
-            var median = list => list.length ? list.reduce((s, n) => s + n, 0) / list.length : 0
+            });
 
             svg.call(zoom)
         }
 
-        this.init()
+        this.init();
 
         this.refreshCanvas = function () {
             console.warn('refreshCanvas not implemented')
-        }
+        };
 
         // class functions
         this.showGraph = function (schema) {
-            var graph = this.parseGraphD3(schema)
+            var graph = this.parseGraphD3(schema);
 
             //console.log(nodes)
 
@@ -92,16 +101,16 @@
                 .force("center", d3.forceCenter(width / 2, height / 2));
 
             // clear
-            svg.selectAll('*').remove()
+            svg.selectAll('*').remove();
 
             links.then(function (all_links) {
-                var nodes = graph.nodes
+                var nodes = graph.nodes;
 
                 // filter only relevant links
                 // because we dont know how the query the box with a filter
                 var links = all_links.filter(link => {
                     return nodes.find(n => n.id == link.source || n.id == link.target)
-                }).concat(graph.links)
+                }).concat(graph.links);
 
                 console.log(nodes, links)
 
@@ -124,6 +133,7 @@
                     .attr("fill", function(node) {
                         return color(node.data.type);
                     })
+                    .on("click", nodeClicked);
 
                 simulation
                     .nodes(nodes)
@@ -159,21 +169,18 @@
             })
         }
 
+        /**
+         * returns the selected artefacts
+         * @returns {Array|*|{Artefact}}
+         */
         this.getSelectedConcepts = function () {
-            var selected_concepts = []
-
-            // get selected
-            $jit.Graph.Util.eachNode(jit.graph, function (node) {
-                if (node.data['$selected']) {
-                    selected_concepts.push(node.data)
-                }
+            return d3.selectAll(`.${class_selected_concept}`).data().map(function (d) {
+                return d.data;
             })
-
-            return selected_concepts
         }
 
         /**
-         * fires conceptsSelected signla
+         * fires conceptsSelected signal
          */
         this.conceptsSelected = function () {
             // TODO OPTIMIZE only return uris

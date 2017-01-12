@@ -73,3 +73,7 @@
     width: 1em;
     height: 1em;
 }
+
+.selected-concept {
+    stroke-width: 5px !important;
+}
