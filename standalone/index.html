@@ -45,10 +45,15 @@
 				<button id="memberberries">M</button>
 			</div>
 
-			<div id="graphMinimap" class="d3-wrapper"></div>
-			<div id="domainGraph" class="d3-wrapper">
 
-			</div>
+			<svg id="domainGraph" class="d3-wrapper">
+
+			</svg>
+
+			<svg id="graphMinimap" class="d3-wrapper">
+				<use href="#domainGraph-nodes" />
+				<use href="#domainGraph-links" />
+			</svg>
 			<div id="graphLegend">
 				<h2>Legend</h2>
 				<dl>

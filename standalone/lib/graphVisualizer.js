@@ -74,7 +74,7 @@
             .scaleExtent([1, 10])
             .on("zoom", zoomed);
 
-        const svg = d3.select(`#${$graph.attr('id')}`).append("svg:svg");
+        const svg = d3.select(`#${$graph.attr('id')}`);
 
         this.init = function () {
             $(window).resize(function () {
@@ -123,6 +123,7 @@
                 console.log(nodes, links);
 
                 const link = svg.append("g")
+                    .attr("id", "domainGraph-links")
                     .attr("class", "links")
                     .selectAll("line")
                     .data(links)
@@ -133,6 +134,7 @@
 
                 // nodes
                 const node = svg.append("g")
+                    .attr("id", "domainGraph-nodes")
                     .attr("class", "nodes")
                     .selectAll("circle")
                     .data(nodes)
@@ -153,6 +155,19 @@
                     node
                         .attr("cx", function(d) { return d.x; })
                         .attr("cy", function(d) { return d.y; });
+
+
+                    // update minimap
+                    const $nodes = $(".nodes", $graph);
+                    const bbox = $nodes.get(0).getBBox();
+
+                    d3.select("#graphMinimap")
+                        .attr("viewBox", [
+                            bbox.x,
+                            bbox.y,
+                            bbox.width,
+                            bbox.height
+                        ].join(" "));
                 };
 
                 simulation
@@ -161,6 +176,8 @@
 
                 simulation.force("link")
                     .links(links);
+
+
             })
         };
 
