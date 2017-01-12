@@ -1,14 +1,14 @@
-(function ($window) {
-    var $ = $window.jQuery
+(function (window) {
+    const $ = window.jQuery;
 
     // this is basically our access to the abox pressed in our schema
     /**
      *
      * @type {SchemaFactory}
      */
-    var schema = $window.northwind || console.warn('no schema defined')
+    const schema = window.northwind || console.warn('no schema defined');
 
-    var aboxQuery = $window.abox_query;
+    const aboxQuery = window.abox_query;
 
     /**
      * css className for a selected concept
@@ -16,28 +16,28 @@
      */
     const class_selected_concept = "selected-concept";
 
-    $window.GraphVisualizer = function (jqueryContext) {
-        var that = this
-        var $dom = jqueryContext
+    window.GraphVisualizer = function (jqueryContext) {
+        const that = this;
+        const $dom = jqueryContext;
 
-        var $minimap = $('#graphMinimap', $dom)
-        var $graph = $('#domainGraph', $dom)
-        var $graphLegend = $('#graphLegend', $dom)
+        const $minimap = $('#graphMinimap', $dom);
+        const $graph = $('#domainGraph', $dom);
+        const $graphLegend = $('#graphLegend', $dom);
 
-        var concepts_selected_listeners = []
+        const concepts_selected_listeners = [];
 
-        var links = new Promise((fulfill, reject) => {
+        const links = new Promise(function (fulfill) {
             aboxQuery({
                 "@type": "rdf:Statement"
             }).then((statements) => {
-                fulfill(statements.map(statement => {
+                fulfill(statements.map(function (statement) {
                     return {
                         source: statement['rdf:subject']['@id'],
                         target: statement['rdf:object']['@id'],
                         value: statement['ia:hasWeight'] * 100 | 0
-                    }
-                }))
-            })
+                    };
+                }));
+            });
         });
 
         const nodeClicked = function () {
@@ -46,39 +46,33 @@
         };
 
         // the graphlayout TODO: different layouts as constants
-        var layout = null
-
-        var uriToDomId = function (uri) {
-            return uri.replace(':', '_')
-        }
-
-        var that = this
+        const layout = null;
 
         // d3
-        var width = +$graph.width()
-        var height = +$graph.height()
-        var simulation
-        var color = d3.scaleOrdinal(d3.schemeCategory20);
-        var zoomed = function () {
+        let width = +$graph.width();
+        let height = +$graph.height();
+        let simulation;
+        let color = d3.scaleOrdinal(d3.schemeCategory20);
+        let zoomed = function () {
             svg.attr("transform", d3.event.transform);//The zoom and panning is affecting my G element which is a child of SVG
-        }
-        var zoom = d3.zoom()
+        };
+        let zoom = d3.zoom()
             .scaleExtent([1, 10])
             .on("zoom", zoomed);
 
-        var svg = d3.select(`#${$graph.attr('id')}`).append("svg:svg")
+        const svg = d3.select(`#${$graph.attr('id')}`).append("svg:svg");
 
         this.init = function () {
             $(window).resize(function () {
                 //jit.canvas.resize($graph.width(), $graph.height())
-            })
+            });
 
             $('h2', $graphLegend).click(function () {
                 $('dl', $graphLegend).toggle()
             });
 
             svg.call(zoom)
-        }
+        };
 
         this.init();
 
@@ -88,7 +82,7 @@
 
         // class functions
         this.showGraph = function (schema) {
-            var graph = this.parseGraphD3(schema);
+            const graph = this.parseGraphD3(schema);
 
             //console.log(nodes)
 
@@ -104,17 +98,17 @@
             svg.selectAll('*').remove();
 
             links.then(function (all_links) {
-                var nodes = graph.nodes;
+                const nodes = graph.nodes;
 
                 // filter only relevant links
                 // because we dont know how the query the box with a filter
-                var links = all_links.filter(link => {
+                const links = all_links.filter(link => {
                     return nodes.find(n => n.id == link.source || n.id == link.target)
                 }).concat(graph.links);
 
-                console.log(nodes, links)
+                console.log(nodes, links);
 
-                var link = svg.append("g")
+                const link = svg.append("g")
                     .attr("class", "links")
                     .selectAll("line")
                     .data(links)
@@ -124,7 +118,7 @@
                     });
 
                 // nodes
-                var node = svg.append("g")
+                const node = svg.append("g")
                     .attr("class", "nodes")
                     .selectAll("circle")
                     .data(nodes)
@@ -135,14 +129,7 @@
                     })
                     .on("click", nodeClicked);
 
-                simulation
-                    .nodes(nodes)
-                    .on("tick", ticked);
-
-                simulation.force("link")
-                    .links(links);
-
-                function ticked() {
+                const ticked = function () {
                     link
                         .attr("x1", function(d) { return d.source.x; })
                         .attr("y1", function(d) { return d.source.y; })
@@ -152,22 +139,29 @@
                     node
                         .attr("cx", function(d) { return d.x; })
                         .attr("cy", function(d) { return d.y; });
-                }
+                };
+
+                simulation
+                    .nodes(nodes)
+                    .on("tick", ticked);
+
+                simulation.force("link")
+                    .links(links);
             })
-        }
+        };
 
         /**
          *
          * @param {Array<ConceptCluster>} domains
          */
         this.showDomain = function (domains) {
-            console.log('showDomain caught with', domains)
+            console.log('showDomain caught with', domains);
 
             // query Things contained in Conceptcluster
             northwind.byUris(domains.map(d => d.uri)).then(function (results) {
-                that.showGraph(results)
-            })
-        }
+                that.showGraph(results);
+            });
+        };
 
         /**
          * returns the selected artefacts
@@ -177,29 +171,29 @@
             return d3.selectAll(`.${class_selected_concept}`).data().map(function (d) {
                 return d.data;
             })
-        }
+        };
 
         /**
          * fires conceptsSelected signal
          */
         this.conceptsSelected = function () {
             // TODO OPTIMIZE only return uris
-            var selected_concepts = this.getSelectedConcepts()
+            const selected_concepts = this.getSelectedConcepts();
 
-            console.log('conceptsSelected fired with', selected_concepts)
+            console.log('conceptsSelected fired with', selected_concepts);
 
-            for (var i = 0; i < concepts_selected_listeners.length; ++i) {
-                concepts_selected_listeners[i].call(this, selected_concepts)
+            for (const concepts_selected_listener of concepts_selected_listeners) {
+                concepts_selected_listener.call(this, selected_concepts);
             }
-        }
+        };
 
         /**
          *  if u want to be signaled on conceptsSelected hook here!
          * @param cb(concepts: []<Artefact>)
          */
         this.addConceptsSelectedListener = function (cb) {
-            concepts_selected_listeners.push(cb)
-        }
+            concepts_selected_listeners.push(cb);
+        };
 
         /**
          * flattens the hierarchy, u still need the links
@@ -214,47 +208,57 @@
              * @param n2
              * @returns {{source: (*|string|string), target: (*|string|string), value: number}}
              */
-            var createLink = (n1, n2) => {
+            const createLink = function (n1, n2) {
                 return {
                     source: n1.uri,
                     target: n2.uri,
                     value: 100
                 }
-            }
+            };
 
-            var mapLink = (source, targets) => targets.map(target => createLink(source, target))
+            /**
+             * creates an array of links between every member of targets to source
+             *
+             * @param source node
+             * @param targets {Array}
+             * @returns {Array}
+             */
+            const mapLink = function (source, targets) {
+                return targets.map(target => createLink(source, target));
+            };
+
             /**
              * nodes that need to be walked
              * queue type LIFO
              * @type {Array}
              */
-            var unparsed = JSON.parse(JSON.stringify(results)) // clone
-            var visited = new Set()
+            const unparsed = JSON.parse(JSON.stringify(results)); // clone
+            const visited = new Set();
 
-            var nodes = []
-            var links = []
+            const nodes = [];
+            const links = [];
 
             //console.log(unparsed)
 
             while (unparsed.length) {
-                var node = unparsed.shift()
+                const node = unparsed.shift();
 
                 if (!visited.has(node.uri) && node.uri !== undefined) {
-                    visited.add(node.uri)
+                    visited.add(node.uri);
 
-                    var node_d3 = {
+                    const node_d3 = {
                         id: node.uri,
                         data: node
-                    }
+                    };
 
-                    nodes.push(node_d3)
+                    nodes.push(node_d3);
 
                     if (node.subclasses !== undefined) {
-                        unparsed.push(...node.subclasses, ...node.individuals)
-                        links.push(...mapLink(node, node.subclasses), ...mapLink(node, node.individuals))
+                        unparsed.push(...node.subclasses, ...node.individuals);
+                        links.push(...mapLink(node, node.subclasses), ...mapLink(node, node.individuals));
                     } else if (node.concepts !== undefined) {
-                        unparsed.push(...node.concepts)
-                        links.push(...mapLink(node, node.concepts))
+                        unparsed.push(...node.concepts);
+                        links.push(...mapLink(node, node.concepts));
                     }
                 }
             }
@@ -262,7 +266,7 @@
             return {
                 nodes: nodes,
                 links: links
-            }
+            };
         }
     }
-})(this)
+})(this);
