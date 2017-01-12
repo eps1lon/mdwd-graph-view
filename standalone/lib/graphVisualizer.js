@@ -80,13 +80,14 @@
         let zoomed = function () {
             console.log('zoomed')
 
-            svg.attr("transform", d3.event.transform);//The zoom and panning is affecting my G element which is a child of SVG
+            g.attr("transform", d3.event.transform);//The zoom and panning is affecting my G element which is a child of SVG
         };
         let zoom = d3.zoom()
             .scaleExtent([1, 10])
             .on("zoom", zoomed);
 
-        const svg = d3.select(`#${$graph.attr('id')}`).append("g").call(zoom);
+        const svg = d3.select(`#${$graph.attr('id')}`).call(zoom);
+        const g = svg.append("g")
 
         this.init = function () {
             $(window).resize(function () {
@@ -97,7 +98,7 @@
                 $('dl', $graphLegend).toggle()
             });
 
-            svg.call(zoom)
+            g.call(zoom)
         };
 
         this.init();
@@ -121,7 +122,7 @@
                 .force("center", d3.forceCenter(width / 2, height / 2));
 
             // clear
-            svg.selectAll('*').remove();
+            g.selectAll('*').remove();
 
             statements.then(function (statements) {
                 const nodes = graph.nodes;
@@ -137,7 +138,7 @@
                     }
                 }
 
-                const link = svg.append("g")
+                const link = g.append("g")
                     .attr("id", "domainGraph-links")
                     .attr("class", "links")
                     .selectAll("line")
@@ -148,7 +149,7 @@
                     });
 
                 // nodes
-                const node = svg.append("g")
+                const node = g.append("g")
                     .attr("id", "domainGraph-nodes")
                     .attr("class", "nodes")
                     .selectAll("circle")
