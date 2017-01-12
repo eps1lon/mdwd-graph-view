@@ -40,9 +40,23 @@
             });
         });
 
+        /**
+         * callback thats executed when the user clicks a node
+         */
         const nodeClicked = function () {
             $(this).toggleClass(class_selected_concept);
             that.conceptsSelected();
+        };
+
+        /**
+         * callback for d3 to determine radius
+         * can be a number
+         */
+        const radius = function (d) {
+            if (d.data.type == "ia:Document") {
+                return 5;
+            }
+            return 10;
         };
 
         // the graphlayout TODO: different layouts as constants
@@ -123,7 +137,7 @@
                     .selectAll("circle")
                     .data(nodes)
                     .enter().append("circle")
-                    .attr("r", 5)
+                    .attr("r", radius)
                     .attr("fill", function(node) {
                         return color(node.data.type);
                     })
