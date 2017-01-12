@@ -26,7 +26,7 @@
 
         const concepts_selected_listeners = [];
 
-        const links = new Promise(function (fulfill) {
+        const statements = new Promise(function (fulfill) {
             aboxQuery({
                 "@type": "rdf:Statement"
             }).then((statements) => {
@@ -39,6 +39,16 @@
                 }));
             });
         });
+
+        /**
+         * undirected
+         * @param l1
+         * @param l2
+         */
+        const linksEqual = function (l1, l2) {
+            return (l1.source == l2.source && l1.target == l2.target)
+                || (l1.source == l2.target && l1.target == l2.source)
+        }
 
         /**
          * callback thats executed when the user clicks a node
@@ -98,7 +108,7 @@
         this.showGraph = function (schema) {
             const graph = this.parseGraphD3(schema);
 
-            //console.log(nodes)
+            console.log('showgraph',schema, graph);
 
             // start new sim
             simulation = d3.forceSimulation()
@@ -111,16 +121,19 @@
             // clear
             svg.selectAll('*').remove();
 
-            links.then(function (all_links) {
+            statements.then(function (statements) {
                 const nodes = graph.nodes;
+                const links = graph.links;
 
-                // filter only relevant links
-                // because we dont know how the query the box with a filter
-                const links = all_links.filter(link => {
-                    return nodes.find(n => n.id == link.source || n.id == link.target)
-                }).concat(graph.links);
-
-                console.log(nodes, links);
+                // map rdf statements on links
+                // O(|statements|*|links|) :(((
+                for (const statement of statements) {
+                    for (const link of links) {
+                        if (linksEqual(link, statement)) {
+                            link.value = statement.value
+                        }
+                    }
+                }
 
                 const link = svg.append("g")
                     .attr("id", "domainGraph-links")
@@ -272,25 +285,28 @@
             //console.log(unparsed)
 
             while (unparsed.length) {
-                const node = unparsed.shift();
+                const artefact = unparsed.shift();
 
-                if (!visited.has(node.uri) && node.uri !== undefined) {
-                    visited.add(node.uri);
+                if (!visited.has(artefact.uri) && artefact.uri !== undefined) {
+                    visited.add(artefact.uri);
 
                     const node_d3 = {
-                        id: node.uri,
-                        data: node
+                        id: artefact.uri,
+                        data: artefact
                     };
 
                     nodes.push(node_d3);
 
-                    if (node.subclasses !== undefined) {
-                        unparsed.push(...node.subclasses, ...node.individuals);
-                        links.push(...mapLink(node, node.subclasses), ...mapLink(node, node.individuals));
-                    } else if (node.concepts !== undefined) {
-                        unparsed.push(...node.concepts);
-                        links.push(...mapLink(node, node.concepts));
+                    if (artefact.subclasses !== undefined) { // Class
+                        unparsed.push(...artefact.subclasses, ...artefact.individuals);
+                        links.push(...mapLink(artefact, artefact.subclasses), ...mapLink(artefact, artefact.individuals));
+                    } else if (artefact.concepts !== undefined) { // concepts
+                        unparsed.push(...artefact.concepts);
+                        links.push(...mapLink(artefact, artefact.concepts));
                     }
+
+                    unparsed.push(...artefact.relatedArtefacts)
+                    links.push(...mapLink(artefact, artefact.relatedArtefacts));
                 }
             }
 

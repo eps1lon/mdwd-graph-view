@@ -32,12 +32,12 @@
              * @param data jsonld data
              * @returns {*}
              */
-            'build': function (schema, data) {
+            'build': function (schema, data, adjacent) {
                 var that = this
                 schema.uri = data['@id']
                 schema.type = data['@type']
 
-                schema.label = data['nw:hasTitle'] || 'entity is not a thing'
+                schema.label = data['nw:hasTitle'] || 'entity is not a Thing'
 
                 // TODO sourceGraph
 
@@ -45,27 +45,7 @@
                     schema.description = data['nw:hasDescription']
                 }
 
-                var related = []
-                switch (data['@type']) {
-                    case 'nw:Product':
-                        related = ['nw:hasProductCategory', 'nw:hasSupplier']
-                        break;
-                    case 'nw:Employee':
-                        related = ['nw:hasTerritory']
-                        break;
-                    case 'nw:Order':
-                        related = ['nw:hasEmployee', 'nw:hasCustomer', 'nw:viaShipper']
-                        break;
-                    case 'nw:OrderDetails':
-                        related = ['nw:hasOrder', 'nw:hasProduct']
-                        break;
-                    // this may be obsolete if we can frame the relevance into the related artefacts
-                    case 'rdf:Statement':
-                        related = ['rdf:object', 'rdf:predicate', 'rdf:subject']
-                        break;
-                }
-
-                schema.relatedArtefacts.push(...related.map(k => that.fromJsonld(data[k])))
+                schema.relatedArtefacts.push(...adjacent)
 
                 return schema
             }
@@ -82,7 +62,11 @@
                 schema.label = data['rdfs:label']['@value']
                 schema.concepts = data['ia:containsIndividual'].map(i => {
                     return that.fromJsonld(i)
-                })
+                });
+
+                // exlcude concepts from related
+                schema.relatedArtefacts
+                    = schema.relatedArtefacts.filter(a => -1 === schema.concepts.find(c => c.uri == a.uri));
 
                 return schema
             }
@@ -122,20 +106,7 @@
             },
             'EXTENDS': 'Artefact',
             'build': function (schema, jsonld) {
-                if (jsonld['@type'] == 'nw:Product') {
-                    schema.superclasses.push(jsonld['nw:hasProductCategory'])
-                } else if (jsonld['@type'] == 'nw:ProductCategory') {
-                    // TODO reference to products
-                } else {
-                    // console.log('TODO Klass', schema, jsonld)
-                }
-
-                if (jsonld['ia:associatedTo']) {
-                    // it should be a list of objects but for whatever reason a list with only one object
-                    // is passed as an object (just the object that should be in the list)
-                    schema.individuals.push(...[].concat(jsonld['ia:associatedTo']).map(d => this.fromJsonld(d)))
-                }
-
+                console.warn("Klass.build not implemented")
 
                 return schema
             }
@@ -151,6 +122,6 @@
 
         }
 
-        return 'Klass'
+        return 'Artefact'
     })
 })(this)

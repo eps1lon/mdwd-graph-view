@@ -4,6 +4,8 @@
 
     const aboxQuery = window.aboxQuery || console.warn('abox_query not defined');
 
+    const $ = window.jQuery;
+
     /**
      * Generates a factory from the schema that can generate data types from an abox
      * @constructor
@@ -111,6 +113,7 @@
                 return jsonld['@id']
             }
 
+
             // get the schema type generally something derived from `@type`
             let schema_type = this.schema_type(jsonld);
             // default values
@@ -118,11 +121,17 @@
             // stack 
             const build_stack = extensionStack(schema_type);
 
+            // arrays are adjacent candidates
+            const adj_candidates = Object.keys(jsonld)
+                                         .filter(k => $.isArray(jsonld[k]))
+            // every member of every candiate key gets fromJsonld applied
+            const adjacent = [].concat(...adj_candidates.map(k => jsonld[k].map(j => this.fromJsonld(j)))); // flattened
+
             //console.log(schema_type, schema, build_stack, jsonld)
 
             // call build for each class in the inheritance chain starting with the superclass
             while (schema_type = build_stack.pop()) {
-                schema = schemas[schema_type].build.call(this, clone(schema), jsonld);
+                schema = schemas[schema_type].build.call(this, clone(schema), jsonld, adjacent);
             }
 
             return schema;
