@@ -16,13 +16,8 @@
      */
     const class_selected_concept = "selected-concept";
 
-    window.GraphVisualizer = function (jqueryContext) {
+    window.GraphVisualizer = function () {
         const that = this;
-        const $dom = jqueryContext;
-
-        const $minimap = $('#graphMinimap', $dom);
-        const $graph = $('#domainGraph', $dom);
-        const $graphLegend = $('#graphLegend', $dom);
 
         const concepts_selected_listeners = [];
 
@@ -69,42 +64,46 @@
             return 10;
         };
 
-        // the graphlayout TODO: different layouts as constants
-        const layout = null;
-
-        // d3
-        let width = +$graph.width();
-        let height = +$graph.height();
-        let simulation;
+        // some private const for d3
+        let width
+            , height
+            , simulation
+            , svg
+            , g
+            , $minimap
+            , $graph
+            , $graphLegend;
         let color = d3.scaleOrdinal(d3.schemeCategory20);
-        let zoomed = function () {
-            g.attr("transform", d3.event.transform);//The zoom and panning is affecting my G element which is a child of SVG
-        };
-        let zoom = d3.zoom()
-            .scaleExtent([1/4, 10])
-            .on("zoom", zoomed);
 
-        const svg = d3.select(`#${$graph.attr('id')}`);
-        const g = svg.append("g");
-
-        svg.append("rect")
-            .attr("width", width)
-            .attr("height", height)
-            .style("fill", "none")
-            .style("pointer-events", "all")
-            .call(zoom);
-
-        this.init = function () {
-            $(window).resize(function () {
-                //jit.canvas.resize($graph.width(), $graph.height())
-            });
-
+        this.init = function (jquery_context) {
             $('h2', $graphLegend).click(function () {
-                $('dl', $graphLegend).toggle()
+                $('dl', $graphLegend).toggle();
             });
-        };
 
-        this.init();
+            this.$dom = jquery_context;
+
+            $minimap = $('#graphMinimap', this.$dom);
+            $graph = $('#domainGraph', this.$dom);
+            $graphLegend = $('#graphLegend', this.$dom);
+
+            width = +$graph.width();
+            height = +$graph.height();
+
+            svg = d3.select(`#${$graph.attr('id')}`);
+            g = svg.append("g");
+
+            svg.append("rect")
+                .attr("width", width)
+                .attr("height", height)
+                .style("fill", "none")
+                .style("pointer-events", "all")
+                .call(d3.zoom()
+                    .scaleExtent([1/4, 10])
+                    .on("zoom", function () {
+                        //The zoom and panning is affecting my G element which is a child of SVG
+                        g.attr("transform", d3.event.transform);
+                    }));
+        };
 
         this.refreshCanvas = function () {
             console.warn('refreshCanvas not implemented')

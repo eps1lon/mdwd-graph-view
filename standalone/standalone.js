@@ -20,7 +20,10 @@
         const domains = window.northwind.byType('ia:ConceptCluster');
 
         const domain_selector = new DomainSelector($('#domainSelector'));
-        const graph_vis = new GraphVisualizer($('#graphVis'));
+
+        const graph_vis = new GraphVisualizer();
+
+        graph_vis.init($('#graphVis'));
 
         // handle communication between domainSelector and graph vis
         domain_selector.addChangeListener(function (domains) {
