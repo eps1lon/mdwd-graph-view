@@ -89,15 +89,46 @@
             width = +$graph.width();
             height = +$graph.height();
 
+            minimap = d3.select("#minimap-view");
             svg = d3.select(`#${$graph.attr('id')}`);
-            g = svg.append("g");
+            g = svg.append("g").attr("id", "d3-tree-elements");
+
+            const scale = [1/4, 10];
+            let shared_zoom;
+
+            const invertTransform = function (d3_transform) {
+                // invert every single operation
+                // - for translation, 1 / for scale
+                const inverted = {
+                    k: 1 / d3_transform.k,
+                    x: -d3_transform.x,
+                    y: -d3_transform.y
+                }
+
+                // and reverse the operations!
+                return `scale(${inverted.k}) translate(${inverted.x} ${inverted.y}) `;
+            }
 
             // zooming
             svg.call(d3.zoom()
-                .scaleExtent([1/4, 10])
+                .scaleExtent(scale)
                 .on("zoom", function () {
-                    //The zoom and panning is affecting my G element which is a child of SVG
-                    g.attr("transform", d3.event.transform);
+                    const transform = d3.event.transform;
+
+                    g.attr("transform", transform);
+
+                    minimap.attr("transform", invertTransform(transform));
+                }))
+
+            // inverse to svg.zoom
+            d3.select(`#${$minimap.attr("id")}`).call(d3.zoom()
+                .scaleExtent(scale)
+                .on("zoom", function () {
+                    const transform = d3.event.transform;
+
+                    minimap.attr("transform", transform);
+
+                    g.attr("transform", invertTransform(transform));
                 }))
         };
 
@@ -105,9 +136,16 @@
             console.warn('refreshCanvas not implemented')
         };
 
-        // class functions
+        /**
+         * generates a graph from a schema
+         *
+         * @param schema
+         */
         this.showGraph = function (schema) {
             const graph = this.parseGraphD3(schema);
+
+            // relevance is used in forceLink.distance
+            // and link svg elem creation as stroke witdh
 
             console.log('showgraph',schema, graph);
 
@@ -137,22 +175,22 @@
                 }
 
                 const link = g.append("g")
-                    .attr("id", "domainGraph-links")
-                    .attr("class", "links")
+                    .attr("id", "d3-links")
                     .selectAll("line")
                     .data(links)
                     .enter().append("line")
+                    .attr("class", "d3-link")
                     .attr("stroke-width", function(d) {
-                        return Math.sqrt(d.value/10);
+                        return d.value/10;
                     });
 
                 // nodes
                 const node = g.append("g")
-                    .attr("id", "domainGraph-nodes")
-                    .attr("class", "nodes")
+                    .attr("id", "d3-nodes")
                     .selectAll("circle")
                     .data(nodes)
                     .enter().append("circle")
+                    .attr("class", "d3-node")
                     .attr("r", radius)
                     .attr("fill", function(node) {
                         return color(node.data.type);
@@ -172,7 +210,7 @@
 
 
                     // update minimap
-                    const $nodes = $(".nodes", $graph);
+                    const $nodes = $(`#${g.attr("id")}`, $graph);
                     const bbox = $nodes.get(0).getBBox();
 
                     d3.select("#graphMinimap")
@@ -182,6 +220,10 @@
                             bbox.width,
                             bbox.height
                         ].join(" "));
+
+                    d3.select("#minimap-view")
+                        .attr("width", width)
+                        .attr("height", height)
                 };
 
                 simulation
@@ -190,8 +232,6 @@
 
                 simulation.force("link")
                     .links(links);
-
-
             })
         };
 
@@ -257,7 +297,7 @@
                 return {
                     source: n1.uri,
                     target: n2.uri,
-                    value: 100
+                    value: 100 // thats the relevance
                 }
             };
 

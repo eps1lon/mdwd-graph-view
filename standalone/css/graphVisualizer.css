@@ -2,12 +2,12 @@
     position: absolute;
 }
 
-.links line {
+.d3-link {
     stroke: #999;
     stroke-opacity: 0.6;
 }
 
-.nodes circle {
+.d3-node {
     stroke: #fff;
     stroke-width: 1.5px;
 }
@@ -30,6 +30,11 @@
     z-index: 1;
     height: 30%;
     width: 20%;
+}
+
+#minimap-view {
+    fill: none;
+    stroke: black;
 }
 
 #graphTools {
