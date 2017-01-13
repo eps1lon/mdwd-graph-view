@@ -92,17 +92,13 @@
             svg = d3.select(`#${$graph.attr('id')}`);
             g = svg.append("g");
 
-            svg.append("rect")
-                .attr("width", width)
-                .attr("height", height)
-                .style("fill", "none")
-                .style("pointer-events", "all")
-                .call(d3.zoom()
-                    .scaleExtent([1/4, 10])
-                    .on("zoom", function () {
-                        //The zoom and panning is affecting my G element which is a child of SVG
-                        g.attr("transform", d3.event.transform);
-                    }));
+            // zooming
+            svg.call(d3.zoom()
+                .scaleExtent([1/4, 10])
+                .on("zoom", function () {
+                    //The zoom and panning is affecting my G element which is a child of SVG
+                    g.attr("transform", d3.event.transform);
+                }))
         };
 
         this.refreshCanvas = function () {
