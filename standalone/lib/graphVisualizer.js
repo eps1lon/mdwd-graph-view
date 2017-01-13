@@ -78,16 +78,21 @@
         let simulation;
         let color = d3.scaleOrdinal(d3.schemeCategory20);
         let zoomed = function () {
-            console.log('zoomed')
-
             g.attr("transform", d3.event.transform);//The zoom and panning is affecting my G element which is a child of SVG
         };
         let zoom = d3.zoom()
-            .scaleExtent([1, 10])
+            .scaleExtent([1/4, 10])
             .on("zoom", zoomed);
 
-        const svg = d3.select(`#${$graph.attr('id')}`).call(zoom);
-        const g = svg.append("g")
+        const svg = d3.select(`#${$graph.attr('id')}`);
+        const g = svg.append("g");
+
+        svg.append("rect")
+            .attr("width", width)
+            .attr("height", height)
+            .style("fill", "none")
+            .style("pointer-events", "all")
+            .call(zoom);
 
         this.init = function () {
             $(window).resize(function () {
@@ -97,8 +102,6 @@
             $('h2', $graphLegend).click(function () {
                 $('dl', $graphLegend).toggle()
             });
-
-            g.call(zoom)
         };
 
         this.init();
