@@ -156,7 +156,7 @@
                     minimap.attr("transform", transform);
 
                     g.attr("transform", invertTransform(transform));
-                }))
+                }));
         };
 
         /**
@@ -167,16 +167,6 @@
         this.generateId = function (id) {
             return [this.renderTargetId, id].join('-')
         };
-
-        /**
-         * converts a xmlns uri to a unique dom id
-         *
-         * @param uri
-         * @returns {String}
-         */
-        this.uriToDomId = function (uri) {
-            return this.generateId(uri.replace(/-/g, '-'));
-        }
 
         /**
          * generates a graph from a schema
@@ -237,8 +227,10 @@
                     .attr("r", radius)
                     .attr("fill", function(node) {
                         return color(node.data['@type']);
-                    })
-                    .on("click", nodeClicked);
+                    });
+
+                node.on("click", nodeClicked);
+                node.append("title").text(d => this.schema.fromJsonld(d.data).label)
 
                 const ticked = () => {
                     link
