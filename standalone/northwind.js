@@ -7,7 +7,7 @@
     }
 
     // northwind abox to schema
-    window.northwind = window.northwind = new SchemaFactory({
+    window.northwind = new SchemaFactory({
         /*
          'ExampleType': {
          'defaults': new Map(Object.entries({})),
@@ -32,20 +32,18 @@
              * @param data jsonld data
              * @returns {*}
              */
-            'build': function (schema, data, adjacent) {
+            'build': function (schema, data) {
                 var that = this
                 schema.uri = data['@id']
                 schema.type = data['@type']
 
-                schema.label = data['nw:hasTitle'] || 'entity is not a Thing'
-
-                // TODO sourceGraph
+                schema.label = data['nw:hasTitle'] || `instance of ${schema.type} is not a Thing`;
 
                 if (data.hasOwnProperty('nw:hasDescription')) {
                     schema.description = data['nw:hasDescription']
                 }
 
-                schema.relatedArtefacts.push(...adjacent)
+                schema.relatedArtefacts = [];
 
                 return schema
             }
@@ -58,15 +56,9 @@
             'EXTENDS': 'Artefact',
             'build': function (schema, data) {
                 var that = this
-                schema.name = data['ia:hasClusterID']
-                schema.label = data['rdfs:label']['@value']
-                schema.concepts = data['ia:containsIndividual'].map(i => {
-                    return that.fromJsonld(i)
-                });
-
-                // exlcude concepts from related
-                schema.relatedArtefacts
-                    = schema.relatedArtefacts.filter(a => -1 === schema.concepts.find(c => c.uri == a.uri));
+                schema.name = data['ia:hasClusterID'];
+                schema.label = data['rdfs:label']['@value'];
+                schema.concepts = data['ia:containsIndividual'];
 
                 return schema
             }
@@ -78,10 +70,10 @@
             },
             'EXTENDS': 'Artefact',
             'build': function (schema, jsonld) {
-                schema.name = jsonld['dc:title']
-                schema.fileType = 'not given in nw'
+                schema.name = jsonld['dc:title'];
+                schema.fileType = 'not given in nw';
 
-                schema.label = jsonld['dc:identifier']
+                schema.label = jsonld['dc:identifier'];
 
                 return schema
             }

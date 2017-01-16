@@ -23,7 +23,7 @@
 
         const graph_vis = new GraphVisualizer();
 
-        graph_vis.init($('#graphVis'));
+        graph_vis.init($('#graphVis'), window.northwind);
 
         // handle communication between domainSelector and graph vis
         domain_selector.addChangeListener(function (domains) {
@@ -36,7 +36,11 @@
         });
 
         domains.then(domains => {
-            domain_selector.displayDomains(domains);
+            domain_selector.displayDomains(domains.content.map(d => {
+                const concept_cluster = northwind.fromJsonld(d);
+                concept_cluster.sourceGraph = domains.id;
+                return concept_cluster;
+            }));
 
             //* TODO select first for testing
             $('#availableDomains li:visible:first input[type=checkbox]')

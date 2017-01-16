@@ -49,7 +49,11 @@
                     "@embed": "@always"
                 }]).then(graph => {
                     //console.log(graph)
-                    fulfill(graph.map(g => that.fromJsonld(g)))
+                    fulfill({
+                        id: `byUri(${uri})`,
+                        name: uri,
+                        content: graph
+                    })
                 })
             })
         };
@@ -57,8 +61,12 @@
         this.byUris = function (uris) {
             // TODO is there a way to query `where in` instead of iterating over list?
             return new Promise((fulfill) => {
-                Promise.all(uris.map(uri => that.byUri(uri))).then(function (results) {
-                    fulfill([].concat(...results)); // flattened array
+                Promise.all(uris.map(uri => that.byUri(uri))).then(function (graphs) {
+                    fulfill({
+                        id: `byUris([${uris.join(',')}])`,
+                        name: `uris=${uris.join(',')}`,
+                        content: [].concat(...graphs.map(g => g.content)) // flattened array
+                    });
                 })
             })
         };
@@ -74,7 +82,11 @@
                     "@embed": "@always",
                     "@type": type
                 }]).then(function (graph) {
-                    fulfill(graph.map(g => that.fromJsonld(g)));
+                    fulfill({
+                        id: `byType('${type}')`,
+                        name: `type=${type}`,
+                        content: graph
+                    });
                 })
             })
         };
@@ -121,17 +133,11 @@
             // stack 
             const build_stack = extensionStack(schema_type);
 
-            // arrays are adjacent candidates
-            const adj_candidates = Object.keys(jsonld)
-                                         .filter(k => $.isArray(jsonld[k]))
-            // every member of every candiate key gets fromJsonld applied
-            const adjacent = [].concat(...adj_candidates.map(k => jsonld[k].map(j => this.fromJsonld(j)))); // flattened
-
             //console.log(schema_type, schema, build_stack, jsonld)
 
             // call build for each class in the inheritance chain starting with the superclass
             while (schema_type = build_stack.pop()) {
-                schema = schemas[schema_type].build.call(this, clone(schema), jsonld, adjacent);
+                schema = schemas[schema_type].build.call(this, clone(schema), jsonld);
             }
 
             return schema;

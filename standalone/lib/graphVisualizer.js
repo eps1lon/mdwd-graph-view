@@ -1,13 +1,6 @@
 (function (window) {
     const $ = window.jQuery;
 
-    // this is basically our access to the abox pressed in our schema
-    /**
-     *
-     * @type {SchemaFactory}
-     */
-    const schema = window.northwind || console.warn('no schema defined');
-
     const aboxQuery = window.aboxQuery;
 
     /**
@@ -58,7 +51,7 @@
          * can be a number
          */
         const radius = function (d) {
-            if (d.data.type == "ia:Document") {
+            if (d.data['@type   '] == "ia:Document") {
                 return 5;
             }
             return 10;
@@ -75,12 +68,27 @@
             , $graphLegend;
         let color = d3.scaleOrdinal(d3.schemeCategory20);
 
-        this.init = function (jquery_context) {
+        /**
+         *
+         * @param jquery_context
+         * @param {!SchemaFactory} schema_factory
+         */
+        this.init = function (jquery_context, schema_factory) {
+            this.$dom = jquery_context;
+            this.schema = schema_factory;
+            this.graph = null;
+
             $('h2', $graphLegend).click(function () {
                 $('dl', $graphLegend).toggle();
             });
 
-            this.$dom = jquery_context;
+            $("#memberberries", this.$dom).click(function () {
+                console.warn("member not supported");
+            });
+
+            $("#graphLayout", this.$dom).change(function () {
+                console.warn("layout not supported");
+            });
 
             $minimap = $('#graphMinimap', this.$dom);
             $graph = $('#domainGraph', this.$dom);
@@ -94,7 +102,29 @@
             g = svg.append("g").attr("id", "d3-tree-elements");
 
             const scale = [1/4, 10];
-            let shared_zoom;
+
+            const minimapZoom = d3.zoom()
+                .scaleExtent(scale)
+                .on("zoom", function () {
+                    const transform = d3.event.transform;
+
+                    g.attr("transform", transform);
+
+                    minimap.attr("transform", invertTransform(transform));
+                });
+
+            $("#graphFocus", this.$dom).click(function () {
+                const nodes = g.selectAll(`.${class_selected_concept}`);
+
+                console.log(nodes);
+
+                const x = 20;
+                const y = 20;
+                const scale = 1;
+                const translate = [width / 2 - scale * x, height / 2 - scale * y];
+
+                g.attr("transform", `translate(${x} ${y}) scale(${scale})`);
+            });
 
             const invertTransform = function (d3_transform) {
                 // invert every single operation
@@ -110,15 +140,7 @@
             }
 
             // zooming
-            svg.call(d3.zoom()
-                .scaleExtent(scale)
-                .on("zoom", function () {
-                    const transform = d3.event.transform;
-
-                    g.attr("transform", transform);
-
-                    minimap.attr("transform", invertTransform(transform));
-                }))
+            svg.call(minimapZoom);
 
             // inverse to svg.zoom
             d3.select(`#${$minimap.attr("id")}`).call(d3.zoom()
@@ -132,22 +154,19 @@
                 }))
         };
 
-        this.refreshCanvas = function () {
-            console.warn('refreshCanvas not implemented')
-        };
-
         /**
          * generates a graph from a schema
          *
-         * @param schema
+         * @param {JsonldGraph} graph
          */
-        this.showGraph = function (schema) {
-            const graph = this.parseGraphD3(schema);
+        this.showGraph = function (graph) {
+            this.graph = graph;
+            const d3_graph = this.parseGraphD3(graph.content);
 
             // relevance is used in forceLink.distance
             // and link svg elem creation as stroke witdh
 
-            console.log('showgraph',schema, graph);
+            console.log('showgraph',graph, d3_graph);
 
             // start new sim
             simulation = d3.forceSimulation()
@@ -161,8 +180,8 @@
             g.selectAll('*').remove();
 
             statements.then(function (statements) {
-                const nodes = graph.nodes;
-                const links = graph.links;
+                const nodes = d3_graph.nodes;
+                const links = d3_graph.links;
 
                 // map rdf statements on links
                 // O(|statements|*|links|) :(((
@@ -193,7 +212,7 @@
                     .attr("class", "d3-node")
                     .attr("r", radius)
                     .attr("fill", function(node) {
-                        return color(node.data.type);
+                        return color(node.data['@type']);
                     })
                     .on("click", nodeClicked);
 
@@ -243,8 +262,8 @@
             console.log('showDomain caught with', domains);
 
             // query Things contained in Conceptcluster
-            northwind.byUris(domains.map(d => d.uri)).then(function (results) {
-                that.showGraph(results);
+            northwind.byUris(domains.map(d => d.uri)).then(function (graph) {
+                that.showGraph(graph);
             });
         };
 
@@ -254,7 +273,9 @@
          */
         this.getSelectedConcepts = function () {
             return d3.selectAll(`.${class_selected_concept}`).data().map(function (d) {
-                return d.data;
+                return Object.assign(that.schema.fromJsonld(d.data),{
+                    sourceGraph: that.graph.id
+                });
             })
         };
 
@@ -262,7 +283,6 @@
          * fires conceptsSelected signal
          */
         this.conceptsSelected = function () {
-            // TODO OPTIMIZE only return uris
             const selected_concepts = this.getSelectedConcepts();
 
             console.log('conceptsSelected fired with', selected_concepts);
@@ -281,12 +301,12 @@
         };
 
         /**
-         * flattens the hierarchy, u still need the links
+         * parses a jsonld graph into a d3 graph
          *
-         * @param results
+         * @param {!JsonLDGraph} graph_content
          * @returns {Array}
          */
-        this.parseGraphD3 = function (results) {
+        this.parseGraphD3 = function (graph_content) {
             /**
              * creates a d3 link between nodes
              * @param n1
@@ -295,8 +315,8 @@
              */
             const createLink = function (n1, n2) {
                 return {
-                    source: n1.uri,
-                    target: n2.uri,
+                    source: n1['@id'],
+                    target: n2['@id'],
                     value: 100 // thats the relevance
                 }
             };
@@ -317,37 +337,31 @@
              * queue type LIFO
              * @type {Array}
              */
-            const unparsed = JSON.parse(JSON.stringify(results)); // clone
+            const unparsed = JSON.parse(JSON.stringify(graph_content)); // clone
             const visited = new Set();
 
             const nodes = [];
             const links = [];
 
-            //console.log(unparsed)
-
             while (unparsed.length) {
-                const artefact = unparsed.shift();
+                const jsonld = unparsed.shift();
 
-                if (!visited.has(artefact.uri) && artefact.uri !== undefined) {
-                    visited.add(artefact.uri);
+                if (!visited.has(jsonld['@id']) && jsonld['@id'] !== undefined) {
+                    visited.add(jsonld['@id']);
 
                     const node_d3 = {
-                        id: artefact.uri,
-                        data: artefact
+                        id: jsonld['@id'],
+                        data: jsonld
                     };
 
                     nodes.push(node_d3);
 
-                    if (artefact.subclasses !== undefined) { // Class
-                        unparsed.push(...artefact.subclasses, ...artefact.individuals);
-                        links.push(...mapLink(artefact, artefact.subclasses), ...mapLink(artefact, artefact.individuals));
-                    } else if (artefact.concepts !== undefined) { // concepts
-                        unparsed.push(...artefact.concepts);
-                        links.push(...mapLink(artefact, artefact.concepts));
+                    for (const value of Object.values(jsonld)) {
+                        if ($.isArray(value)) {
+                            unparsed.push(...value);
+                            links.push(...mapLink(jsonld, value));
+                        }
                     }
-
-                    unparsed.push(...artefact.relatedArtefacts)
-                    links.push(...mapLink(artefact, artefact.relatedArtefacts));
                 }
             }
 
