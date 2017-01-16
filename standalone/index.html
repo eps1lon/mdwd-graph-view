@@ -36,26 +36,26 @@
 
 		</div>
 		<div class="component" id="graphVis">
-			<div id="graphTools">
-				<select id="graphLayout">
+			<div id="graphVis-graphTools" class="graphTools">
+				<select id="graphVis-graphLayout" class=""graphLayout>
 					<option value="hyper_tree" selected="selected">Hyper Hyper Tree</option>
 					<option value="tree_map">Tree Map</option>
 				</select>
-				<button id="graphFocus">F</button>
-				<button id="memberberries">M</button>
+				<button id="graphVis-graphFocus" class="graphFocus">F</button>
+				<button id="graphVis-memberberries" class="memberberries">M</button>
 			</div>
 
 
-			<svg id="domainGraph" class="d3-wrapper">
+			<svg id="graphVis-domainGraph" class="d3-wrapper domainGraph">
 
 			</svg>
 
-			<svg id="graphMinimap" class="d3-wrapper">
-				<use href="#d3-nodes" />
-				<use href="#d3-links" />
-				<rect id="minimap-view"></rect>
+			<svg id="graphVis-graphMinimap" class="d3-wrapper graphMinimap">
+				<use href="#graphVis-d3-nodes" />
+				<use href="#graphVis-d3-links" />
+				<rect id="graphVis-minimapView" class="minimapView"></rect>
 			</svg>
-			<div id="graphLegend">
+			<div id="graphVis-graphLegend" class="graphLegend">
 				<h2>Legend</h2>
 				<dl>
 					<dt class="color template"></dt>

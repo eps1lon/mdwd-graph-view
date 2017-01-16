@@ -12,7 +12,12 @@
     stroke-width: 1.5px;
 }
 
-#domainGraph {
+.selected-concept {
+    stroke-width: 5px !important;
+}
+
+/* specific for standalone since component instance ids */
+#graphVis-domainGraph {
     background-color: grey;
     z-index: 0;
     height: 100%;
@@ -20,19 +25,19 @@
     overflow: hidden;
 }
 
-#domainGraph svg {
+#graphVis-domainGraph svg {
     width: 100%;
     height: 100%;
 }
 
-#graphMinimap {
+#graphVis-graphMinimap {
     background-color: aquamarine;
     z-index: 1;
     height: 30%;
     width: 20%;
 }
 
-#minimap-view {
+#graphVis-minimapView {
     fill: none;
     stroke: black;
 }
@@ -44,41 +49,37 @@
     z-index: 2;
 }
 
-#graphLayout {
+#graphVis-graphLayout {
 
 }
 
-#graphFocus {
+#graphVis-graphFocus {
 
 }
 
-#memberberries {
+#graphVis-memberberries {
 }
 
-#graphLegend {
+#graphVis-graphLegend {
     position: absolute;
     top: 30%;
 }
 
-#graphLegend h2 {
+#graphVis-graphLegend h2 {
     cursor: help;
 }
 
-#graphLegend dl {
+#graphVis-graphLegend dl {
     overflow: hidden;
 }
 
-#graphLegend dd {
+#graphVis-graphLegend dd {
     float: left;
 }
 
-#graphLegend dt {
+#graphVis-graphLegend dt {
     clear: both;
     float: left;
     width: 1em;
     height: 1em;
-}
-
-.selected-concept {
-    stroke-width: 5px !important;
 }

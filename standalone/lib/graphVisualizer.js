@@ -4,6 +4,27 @@
     const aboxQuery = window.aboxQuery;
 
     /**
+     * undirected
+     * @param l1
+     * @param l2
+     */
+    const linksEqual = function (l1, l2) {
+        return (l1.source == l2.source && l1.target == l2.target)
+            || (l1.source == l2.target && l1.target == l2.source)
+    };
+
+    /**
+     * callback for d3 to determine radius
+     * can be a number
+     */
+    const radius = function (d) {
+        if (d.data['@type   '] == "ia:Document") {
+            return 5;
+        }
+        return 10;
+    };
+
+    /**
      * css className for a selected concept
      * @type {string}
      */
@@ -28,15 +49,6 @@
             });
         });
 
-        /**
-         * undirected
-         * @param l1
-         * @param l2
-         */
-        const linksEqual = function (l1, l2) {
-            return (l1.source == l2.source && l1.target == l2.target)
-                || (l1.source == l2.target && l1.target == l2.source)
-        };
 
         /**
          * callback thats executed when the user clicks a node
@@ -44,17 +56,6 @@
         const nodeClicked = function () {
             $(this).toggleClass(class_selected_concept);
             that.conceptsSelected();
-        };
-
-        /**
-         * callback for d3 to determine radius
-         * can be a number
-         */
-        const radius = function (d) {
-            if (d.data['@type   '] == "ia:Document") {
-                return 5;
-            }
-            return 10;
         };
 
         // some private const for d3
@@ -78,28 +79,32 @@
             this.schema = schema_factory;
             this.graph = null;
 
+            this.renderTargetId  = jquery_context.attr('id');
+
+            $minimap = $(`#${this.generateId('graphMinimap')}`, this.$dom);
+            $graph = $(`#${this.generateId('domainGraph')}`, this.$dom);
+            $graphLegend = $(`#${this.generateId('graphLegend')}`, this.$dom);
+
+            console.log($minimap, $graph, $graphLegend)
+
             $('h2', $graphLegend).click(function () {
                 $('dl', $graphLegend).toggle();
             });
 
-            $("#memberberries", this.$dom).click(function () {
+            $(`#${this.generateId('memberberries')}`, this.$dom).click(function () {
                 console.warn("member not supported");
             });
 
-            $("#graphLayout", this.$dom).change(function () {
+            $(`#${this.generateId('graphLayout')}`, this.$dom).change(function () {
                 console.warn("layout not supported");
             });
-
-            $minimap = $('#graphMinimap', this.$dom);
-            $graph = $('#domainGraph', this.$dom);
-            $graphLegend = $('#graphLegend', this.$dom);
 
             width = +$graph.width();
             height = +$graph.height();
 
-            minimap = d3.select("#minimap-view");
+            minimap = d3.select(`#${this.generateId('minimapView')}`);
             svg = d3.select(`#${$graph.attr('id')}`);
-            g = svg.append("g").attr("id", "d3-tree-elements");
+            g = svg.append("g").attr("id", this.generateId('d3-tree-elements'));
 
             const scale = [1/4, 10];
 
@@ -113,7 +118,7 @@
                     minimap.attr("transform", invertTransform(transform));
                 });
 
-            $("#graphFocus", this.$dom).click(function () {
+            $(`#${this.generateId('graphFocus')}`, this.$dom).click(function () {
                 const nodes = g.selectAll(`.${class_selected_concept}`);
 
                 console.log(nodes);
@@ -155,6 +160,25 @@
         };
 
         /**
+         * helper to generate a unique id that doesnt collide with another instance of this component
+         * @param id
+         * @returns {String}
+         */
+        this.generateId = function (id) {
+            return [this.renderTargetId, id].join('-')
+        };
+
+        /**
+         * converts a xmlns uri to a unique dom id
+         *
+         * @param uri
+         * @returns {String}
+         */
+        this.uriToDomId = function (uri) {
+            return this.generateId(uri.replace(/-/g, '-'));
+        }
+
+        /**
          * generates a graph from a schema
          *
          * @param {JsonldGraph} graph
@@ -179,7 +203,7 @@
             // clear
             g.selectAll('*').remove();
 
-            statements.then(function (statements) {
+            statements.then(statements => {
                 const nodes = d3_graph.nodes;
                 const links = d3_graph.links;
 
@@ -194,7 +218,7 @@
                 }
 
                 const link = g.append("g")
-                    .attr("id", "d3-links")
+                    .attr("id", this.generateId('d3-links'))
                     .selectAll("line")
                     .data(links)
                     .enter().append("line")
@@ -205,7 +229,7 @@
 
                 // nodes
                 const node = g.append("g")
-                    .attr("id", "d3-nodes")
+                    .attr("id", this.generateId('d3-nodes'))
                     .selectAll("circle")
                     .data(nodes)
                     .enter().append("circle")
@@ -216,23 +240,23 @@
                     })
                     .on("click", nodeClicked);
 
-                const ticked = function () {
+                const ticked = () => {
                     link
-                        .attr("x1", function(d) { return d.source.x; })
-                        .attr("y1", function(d) { return d.source.y; })
-                        .attr("x2", function(d) { return d.target.x; })
-                        .attr("y2", function(d) { return d.target.y; });
+                        .attr("x1", d => d.source.x)
+                        .attr("y1", d => d.source.y)
+                        .attr("x2", d => d.target.x)
+                        .attr("y2", d => d.target.y);
 
                     node
-                        .attr("cx", function(d) { return d.x; })
-                        .attr("cy", function(d) { return d.y; });
+                        .attr("cx", d => d.x)
+                        .attr("cy", d => d.y);
 
 
                     // update minimap
                     const $nodes = $(`#${g.attr("id")}`, $graph);
                     const bbox = $nodes.get(0).getBBox();
 
-                    d3.select("#graphMinimap")
+                    d3.select(`#${this.generateId('graphMinimap')}`)
                         .attr("viewBox", [
                             bbox.x,
                             bbox.y,
@@ -240,7 +264,7 @@
                             bbox.height
                         ].join(" "));
 
-                    d3.select("#minimap-view")
+                    d3.select(`#${this.generateId('minimapView')}`)
                         .attr("width", width)
                         .attr("height", height)
                 };
