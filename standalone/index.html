@@ -4,10 +4,9 @@
 		<title>Scaffold</title>
 		<script src="lib/ext/jquery-3.1.1.min.js"></script>
 		<script src="lib/ext/jsonld.js"></script>
-		<script src="../GraphView/lib/jit.js"></script>
+		<script src="lib/ext/d3.v4.min.js"></script>
 
 		<script src="lib/abox_query.js"></script>
-		<script src="lib/abox_parse.js"></script>
 		<script src="lib/SchemaFactory.js"></script>
 		<script src="northwind.js"></script>
 		<script src="lib/domainSelector.js"></script>
@@ -46,8 +45,16 @@
 				<button id="memberberries">M</button>
 			</div>
 
-			<div id="graphMinimap" class="jitCanvas"></div>
-			<div id="domainGraph" class="jitCanvas"></div>
+
+			<svg id="domainGraph" class="d3-wrapper">
+
+			</svg>
+
+			<svg id="graphMinimap" class="d3-wrapper">
+				<use href="#d3-nodes" />
+				<use href="#d3-links" />
+				<rect id="minimap-view"></rect>
+			</svg>
 			<div id="graphLegend">
 				<h2>Legend</h2>
 				<dl>

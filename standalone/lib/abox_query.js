@@ -1,11 +1,11 @@
-(function ($window) {
+(function (window) {
     'use strict';
-    var $ = $window.jQuery
+    const $ = window.jQuery;
 
     /**
      * the json ld abox as a {Promise}
      */
-    var abox = $.getJSON('data/northwind-abox.json')
+    const abox = $.getJSON('data/northwind-abox.json');
 
     /**
      * context c&p from trac
@@ -23,27 +23,27 @@
         nwa: "http://microsoft.com/2013/northwind/abox-2016#",
         rdfs: "http://www.w3.org/2000/01/rdf-schema#",
         dc: "http://purl.org/dc/terms/"
-    }
+    };
 
     /**
      * takes a query graph for a jsonld frame
      * @param query_graph
      * @returns {Promise}
      */
-    $window.abox_query = function (query_graph) {
-        return new Promise((fulfill, reject) => {
-            var query = {
+    window.aboxQuery = function (query_graph) {
+        return new Promise(function (fulfill, reject) {
+            const query = {
                 "@context": ABOX_CONTEXT,
                 "@graph": query_graph
-            }
+            };
 
             abox.then((full_graph) => {
-                jsonld.promises.frame(full_graph, query).then((frame) => {
+                jsonld.promises.frame(full_graph, query).then(function (frame) {
                     fulfill(frame["@graph"]);
-                }, (error) => {
+                }, function (error) {
                     reject(error);
                 });
-            })
-        })
+            });
+        });
     }
-})(this)
+})(this);

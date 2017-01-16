@@ -1,374 +1,374 @@
-(function ($window) {
-    var $ = $window.jQuery
+(function (window) {
+    const $ = window.jQuery;
 
-    // this is basically our access to the abox pressed in our schema
+    const aboxQuery = window.aboxQuery;
+
     /**
-     *
-     * @type {SchemaFactory}
+     * css className for a selected concept
+     * @type {string}
      */
-    var schema = $window.northwind || console.warn('no schema defined')
+    const class_selected_concept = "selected-concept";
 
-    $window.GraphVisualizer = function (jqueryContext) {
-        var that = this
-        var $dom = jqueryContext
+    window.GraphVisualizer = function () {
+        const that = this;
 
-        var $minimap = $('#graphMinimap', $dom)
-        var $graph = $('#domainGraph', $dom)
-        var $graphLegend = $('#graphLegend', $dom)
+        const concepts_selected_listeners = [];
 
-        var concepts_selected_listeners = []
+        const statements = new Promise(function (fulfill) {
+            aboxQuery({
+                "@type": "rdf:Statement"
+            }).then((statements) => {
+                fulfill(statements.map(function (statement) {
+                    return {
+                        source: statement['rdf:subject']['@id'],
+                        target: statement['rdf:object']['@id'],
+                        value: statement['ia:hasWeight'] * 100 | 0
+                    };
+                }));
+            });
+        });
 
-        // the graphlayout TODO: different layouts as constants
-        var layout = null
+        /**
+         * undirected
+         * @param l1
+         * @param l2
+         */
+        const linksEqual = function (l1, l2) {
+            return (l1.source == l2.source && l1.target == l2.target)
+                || (l1.source == l2.target && l1.target == l2.source)
+        };
 
-        var uriToDomId = function (uri) {
-            return uri.replace(':', '_')
-        }
+        /**
+         * callback thats executed when the user clicks a node
+         */
+        const nodeClicked = function () {
+            $(this).toggleClass(class_selected_concept);
+            that.conceptsSelected();
+        };
 
-        var clone = o => JSON.parse(JSON.stringify(o))
-
-        var that = this
-
-        // create jit graph
-        var jit = new $jit.ForceDirected({
-            injectInto: $graph.attr('id'),
-            height: $graph.height(),
-            width: $graph.width(),
-            //Change the animation transition type
-            transition: $jit.Trans.Circ.easeOut,
-            //animation duration (in milliseconds)
-            duration: 1000,
-            Node: {
-                dim: 10,
-                color: 'red',
-                overridable: true,
-                transform: false
-            },
-            Edge: {
-                lineWidth: 1,
-                color: "blue",
-                overridable: true
-            },
-            Events: {
-                enable: true,
-                type: 'Native',
-                onClick: function (node, eventInfo, e) {
-                    var pos = eventInfo.getPos()
-
-                    if (node === false) {
-                        // this doesnt really work
-                        // node = jit.graph.getClosestNodeToPos(new $jit.Complext(pos.x, pos.y))
-                    }
-
-                    // TODO this is our conceptsSelected handle!
-                    if (node !== false) {
-                        // toggle selected
-                        node.data['$selected'] = !node.data['$selected']
-
-                        // get selected
-                        $jit.Graph.Util.eachNode(jit.graph, function (node) {
-                            // TODO selected style
-                            if (node.data['$selected']) {
-                                node.data['$type'] = 'triangle'
-                            } else {
-                                node.data['$type'] = node.Config.type
-                            }
-                        })
-
-                        that.refresh()
-                        //jit.select(jit.root);
-
-                        // fire change handle
-                        that.conceptsSelected()
-                    }
-                },
-                /*
-                //Change cursor style when hovering a node
-                onMouseEnter: function() {
-                    jit.canvas.getElement().style.cursor = 'move';
-                },
-                onMouseLeave: function() {
-                    jit.canvas.getElement().style.cursor = '';
-                },
-                //Update node positions when dragged
-                onDragMove: function(node, eventInfo, e) {
-                    var pos = eventInfo.getPos();
-                    node.pos.setc(pos.x, pos.y);
-                    jit.plot();
-                },//*/
-                onRightClick: function (node, eventInfo, e) {
-                    if (node !== false) {
-                        // this is semantically a Tip but Tips are attached to the cursorpointer
-                        // and not permanent
-                        $('#detailView').html('<pre>' + JSON.stringify(node.data, null, 4) + '</pre>')
-
-                        // TODO semantic zoom
-                        console.log(node)
-
-                        if (node.collapsed) {
-                            jit.op.expand(node, {
-
-                            })
-                        } else {
-                            jit.op.contract(node, {
-
-                            })
-                        }
-
-                        that.refresh()
-                    }
-                }
-            },
-            Navigation: {
-                enable: true,
-                type: 'Native', // check events type, got no d&d when type in navigation was not set
-                panning: 'avoid nodes', // 'avoid nodes'
-                zooming: 20
-            },
-            Tips: {
-                enable: true,
-                onShow: function (tip, node) {
-                    // thats where Events.onClick should be in a perfect world
-                }
-            },
-            /**
-             * extracts the name for the node from the jsonld data
-             *
-             * @param domElement
-             * @param node
-             */
-            onCreateLabel: function (domElement, node) {
-                $(domElement).text(node.label)
-            },
-            onComplete: function () {
-                // create legend
-                var $legend = $('dl', $graphLegend)
-
-                // remove old
-                $('*:not(.template)', $legend).remove()
-
-                // create map
-                var colors = new Set()
-
-                // loop through node and map $color => $colorBasedOn
-                $jit.Graph.Util.eachNode(jit.graph, function (node) {
-                    var color = node.data['$color'] || node.Node.color
-
-                    if (!colors.has(color)) {
-                        colors.add(color)
-
-                        var legend = 'Unknown'
-                        if (node.data['$colorBasedOn']) {
-                            legend
-                                = node.data['$colorBasedOn'].split(',')
-                                                            .map(basedOn => node.data[basedOn])
-                        }
-
-                        var $color = $('.color.template', $legend).clone(true)
-                                                                  .removeClass('template')
-                        var $desc = $('.colorLegend.template', $legend).clone(true)
-                                                                       .removeClass('template')
-
-                        $color.css('background-color', color)
-                        $desc.text(legend)
-
-                        $legend.append($color, $desc)
-                    }
-                })
-            },
-            onPlaceLabel: function (domElement, node) {
+        /**
+         * callback for d3 to determine radius
+         * can be a number
+         */
+        const radius = function (d) {
+            if (d.data['@type   '] == "ia:Document") {
+                return 5;
             }
-        })
+            return 10;
+        };
 
-        this.init = function () {
-            $(window).resize(function () {
-                jit.canvas.resize($graph.width(), $graph.height())
-            })
+        // some private const for d3
+        let width
+            , height
+            , simulation
+            , svg
+            , g
+            , $minimap
+            , $graph
+            , $graphLegend;
+        let color = d3.scaleOrdinal(d3.schemeCategory20);
+
+        /**
+         *
+         * @param jquery_context
+         * @param {!SchemaFactory} schema_factory
+         */
+        this.init = function (jquery_context, schema_factory) {
+            this.$dom = jquery_context;
+            this.schema = schema_factory;
+            this.graph = null;
 
             $('h2', $graphLegend).click(function () {
-                $('dl', $graphLegend).toggle()
-            })
+                $('dl', $graphLegend).toggle();
+            });
 
-            var median = list => list.length ? list.reduce((s, n) => s + n, 0) / list.length : 0
+            $("#memberberries", this.$dom).click(function () {
+                console.warn("member not supported");
+            });
 
-            $('#graphFocus').click(function () {
-                var concepts = that.getSelectedConcepts()
-                var positions = {
-                    x: [],
-                    y: []
-                }
+            $("#graphLayout", this.$dom).change(function () {
+                console.warn("layout not supported");
+            });
 
-                // get center of concepts
-                for (var concept of concepts) {
-                    var node = $jit.Graph.Util.getNode(jit.graph, uriToDomId(concept.uri))
-                    positions.x.push(node.pos.x)
-                    positions.y.push(node.pos.y)
-                }
+            $minimap = $('#graphMinimap', this.$dom);
+            $graph = $('#domainGraph', this.$dom);
+            $graphLegend = $('#graphLegend', this.$dom);
 
-                // TODO canvas pos
-            })
-        }
+            width = +$graph.width();
+            height = +$graph.height();
 
-        this.init()
+            minimap = d3.select("#minimap-view");
+            svg = d3.select(`#${$graph.attr('id')}`);
+            g = svg.append("g").attr("id", "d3-tree-elements");
 
-        this.refresh = function () {
-            if (jit.animate) jit.animate()
-            else jit.refresh()
-        }
+            const scale = [1/4, 10];
 
-        // class functions
+            const minimapZoom = d3.zoom()
+                .scaleExtent(scale)
+                .on("zoom", function () {
+                    const transform = d3.event.transform;
+
+                    g.attr("transform", transform);
+
+                    minimap.attr("transform", invertTransform(transform));
+                });
+
+            $("#graphFocus", this.$dom).click(function () {
+                const nodes = g.selectAll(`.${class_selected_concept}`);
+
+                console.log(nodes);
+
+                const x = 20;
+                const y = 20;
+                const scale = 1;
+                const translate = [width / 2 - scale * x, height / 2 - scale * y];
+
+                g.attr("transform", `translate(${x} ${y}) scale(${scale})`);
+            });
+
+            const invertTransform = function (d3_transform) {
+                // invert every single operation
+                // - for translation, 1 / for scale
+                const inverted = {
+                    k: 1 / d3_transform.k,
+                    x: -d3_transform.x,
+                    y: -d3_transform.y
+                };
+
+                // and reverse the operations!
+                return `scale(${inverted.k}) translate(${inverted.x} ${inverted.y}) `;
+            };
+
+            // zooming ignore dbclick zoom
+            svg.call(minimapZoom).on("dblclick.zoom", null);
+
+            // inverse to svg.zoom
+            d3.select(`#${$minimap.attr("id")}`).call(d3.zoom()
+                .scaleExtent(scale)
+                .on("zoom", function () {
+                    const transform = d3.event.transform;
+
+                    minimap.attr("transform", transform);
+
+                    g.attr("transform", invertTransform(transform));
+                }))
+        };
+
+        /**
+         * generates a graph from a schema
+         *
+         * @param {JsonldGraph} graph
+         */
         this.showGraph = function (graph) {
-            console.log('showGraph caught with', graph)
-            var jit_graph = this.parseGraph(graph)
-            console.log('parsed to', jit_graph)
+            this.graph = graph;
+            const d3_graph = this.parseGraphD3(graph.content);
 
-            if (jit_graph.length) {
-                jit.loadJSON(jit_graph)
+            // relevance is used in forceLink.distance
+            // and link svg elem creation as stroke witdh
 
-                jit.refresh()
-                if (jit.animate) jit.animate()
-                jit.controller.onComplete()
-            } else {
-                console.log('empty graph')
-            }
+            console.log('showgraph',graph, d3_graph);
 
-        }
+            // start new sim
+            simulation = d3.forceSimulation()
+                .force("link", d3.forceLink()
+                    .id(function(d) { return d.id; })
+                    .distance(l => l.value))
+                .force("charge", d3.forceManyBody())
+                .force("center", d3.forceCenter(width / 2, height / 2));
+
+            // clear
+            g.selectAll('*').remove();
+
+            statements.then(function (statements) {
+                const nodes = d3_graph.nodes;
+                const links = d3_graph.links;
+
+                // map rdf statements on links
+                // O(|statements|*|links|) :(((
+                for (const statement of statements) {
+                    for (const link of links) {
+                        if (linksEqual(link, statement)) {
+                            link.value = statement.value
+                        }
+                    }
+                }
+
+                const link = g.append("g")
+                    .attr("id", "d3-links")
+                    .selectAll("line")
+                    .data(links)
+                    .enter().append("line")
+                    .attr("class", "d3-link")
+                    .attr("stroke-width", function(d) {
+                        return d.value/10;
+                    });
+
+                // nodes
+                const node = g.append("g")
+                    .attr("id", "d3-nodes")
+                    .selectAll("circle")
+                    .data(nodes)
+                    .enter().append("circle")
+                    .attr("class", "d3-node")
+                    .attr("r", radius)
+                    .attr("fill", function(node) {
+                        return color(node.data['@type']);
+                    })
+                    .on("click", nodeClicked);
+
+                const ticked = function () {
+                    link
+                        .attr("x1", function(d) { return d.source.x; })
+                        .attr("y1", function(d) { return d.source.y; })
+                        .attr("x2", function(d) { return d.target.x; })
+                        .attr("y2", function(d) { return d.target.y; });
+
+                    node
+                        .attr("cx", function(d) { return d.x; })
+                        .attr("cy", function(d) { return d.y; });
+
+
+                    // update minimap
+                    const $nodes = $(`#${g.attr("id")}`, $graph);
+                    const bbox = $nodes.get(0).getBBox();
+
+                    d3.select("#graphMinimap")
+                        .attr("viewBox", [
+                            bbox.x,
+                            bbox.y,
+                            bbox.width,
+                            bbox.height
+                        ].join(" "));
+
+                    d3.select("#minimap-view")
+                        .attr("width", width)
+                        .attr("height", height)
+                };
+
+                simulation
+                    .nodes(nodes)
+                    .on("tick", ticked);
+
+                simulation.force("link")
+                    .links(links);
+            })
+        };
 
         /**
          *
          * @param {Array<ConceptCluster>} domains
          */
         this.showDomain = function (domains) {
-            console.log('showDomain caught with', domains)
-
-            // remove conceptcluster from graph that are not included
-
-            // add new graph for domain
-
-            // for now we use the empty-create crowbar
-            jit.canvas.clear()
+            console.log('showDomain caught with', domains);
 
             // query Things contained in Conceptcluster
-            northwind.byUris(domains.map(d => d.uri)).then(function (results) {
-                that.showGraph(results)
-            })
-        }
-
-        this.getSelectedConcepts = function () {
-            var selected_concepts = []
-
-            // get selected
-            $jit.Graph.Util.eachNode(jit.graph, function (node) {
-                if (node.data['$selected']) {
-                    selected_concepts.push(node.data)
-                }
-            })
-
-            return selected_concepts
-        }
+            northwind.byUris(domains.map(d => d.uri)).then(function (graph) {
+                that.showGraph(graph);
+            });
+        };
 
         /**
-         * fires conceptsSelected signla
+         * returns the selected artefacts
+         * @returns {Array|*|{Artefact}}
+         */
+        this.getSelectedConcepts = function () {
+            return d3.selectAll(`.${class_selected_concept}`).data().map(function (d) {
+                return Object.assign(that.schema.fromJsonld(d.data),{
+                    sourceGraph: that.graph.id
+                });
+            })
+        };
+
+        /**
+         * fires conceptsSelected signal
          */
         this.conceptsSelected = function () {
-            // TODO OPTIMIZE only return uris
-            var selected_concepts = this.getSelectedConcepts()
+            const selected_concepts = this.getSelectedConcepts();
 
-            console.log('conceptsSelected fired with', selected_concepts)
+            console.log('conceptsSelected fired with', selected_concepts);
 
-            for (var i = 0; i < concepts_selected_listeners.length; ++i) {
-                concepts_selected_listeners[i].call(this, selected_concepts)
+            for (const concepts_selected_listener of concepts_selected_listeners) {
+                concepts_selected_listener.call(this, selected_concepts);
             }
-        }
+        };
 
         /**
          *  if u want to be signaled on conceptsSelected hook here!
          * @param cb(concepts: []<Artefact>)
          */
         this.addConceptsSelectedListener = function (cb) {
-            concepts_selected_listeners.push(cb)
-        }
+            concepts_selected_listeners.push(cb);
+        };
 
         /**
-         * parses our schema graph into a strcture thats readable by our used api
-         * @param graph our graph as defined in the schema
-         * @returns {Graph}
+         * parses a jsonld graph into a d3 graph
+         *
+         * @param {!JsonLDGraph} graph_content
+         * @returns {Array}
          */
-        this.parseGraph = function (graph) {
-            //console.log('parseGraph', JSON.parse(JSON.stringify(graph)))
+        this.parseGraphD3 = function (graph_content) {
+            /**
+             * creates a d3 link between nodes
+             * @param n1
+             * @param n2
+             * @returns {{source: (*|string|string), target: (*|string|string), value: number}}
+             */
+            const createLink = function (n1, n2) {
+                return {
+                    source: n1['@id'],
+                    target: n2['@id'],
+                    value: 100 // thats the relevance
+                }
+            };
 
             /**
-             * the extended json for infovis
-             * see https://philogb.github.io/jit/static/v20/Docs/files/Loader/Loader-js.html#Loader.js
-             * @type {Array}
+             * creates an array of links between every member of targets to source
+             *
+             * @param source node
+             * @param targets {Array}
+             * @returns {Array}
              */
-            var json = []
+            const mapLink = function (source, targets) {
+                return targets.map(target => createLink(source, target));
+            };
 
             /**
              * nodes that need to be walked
              * queue type LIFO
              * @type {Array}
              */
-            var unparsed = JSON.parse(JSON.stringify(graph)) // clone
+            const unparsed = JSON.parse(JSON.stringify(graph_content)); // clone
+            const visited = new Set();
 
-            var visited = new Set()
+            const nodes = [];
+            const links = [];
 
             while (unparsed.length) {
-                var artefact = unparsed.shift()
+                const jsonld = unparsed.shift();
 
-                //console.log('walk', artefact)
+                if (!visited.has(jsonld['@id']) && jsonld['@id'] !== undefined) {
+                    visited.add(jsonld['@id']);
 
-                if (!visited.has(artefact.uri)) {
-                    visited.add(artefact.uri)
+                    const node_d3 = {
+                        id: jsonld['@id'],
+                        data: jsonld
+                    };
 
-                    var adjacencies = artefact.relatedArtefacts
+                    nodes.push(node_d3);
 
-                    // duck typing
-                    if (artefact.subclasses) { // Class
-                        adjacencies.push(...artefact.subclasses)
-                        adjacencies.push(...artefact.individuals)
-                    } else if (artefact.concepts) { // ConceptCluster
-                        adjacencies.push(...artefact.concepts)
+                    for (const value of Object.values(jsonld)) {
+                        if ($.isArray(value)) {
+                            unparsed.push(...value);
+                            links.push(...mapLink(jsonld, value));
+                        }
                     }
-                    // walk the adjacents
-                    unparsed.push(...adjacencies)
-
-                    if (!artefact.type) console.log(artefact.uri)
-
-                    var color = aretefact => ([...(artefact.type || artefact.uri)].reduce((s, c) => s * c.charCodeAt() % (1<<24), 1)).toString(16)
-
-                    var json_node = {
-                        id: uriToDomId(artefact.uri),
-                        label: artefact.label,
-                        data: Object.assign(artefact, {
-                            // some number bases on the chars of type as hex
-                            '$color': '#' + color(artefact),
-                            '$colorBasedOn': 'type' // legend helper
-                        }),
-                        adjacencies: adjacencies.map(a => {
-                            return {
-                                nodeTo: uriToDomId(a.uri),
-                                // if you want the add the artefact to the
-                                // adj data clone it or the additional data will
-                                // be overridden
-                                data: {
-                                    '$lineWidth': a.type == "ia:Document" ? 1 : 3
-                                }
-                            }
-                        })
-                    }
-
-                    json.push(json_node)
                 }
             }
 
-            // TODO infovis hypertree needs a connected graph, disconnected graphs cannot be drawn nicely
-            // thats currently not guaranteed
-            //console.log(json.map(n => n.id))
-
-            console.log(json)
-
-            return json
+            return {
+                nodes: nodes,
+                links: links
+            };
         }
     }
-})(this)
+})(this);
