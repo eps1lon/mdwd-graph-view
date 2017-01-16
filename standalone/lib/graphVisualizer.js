@@ -278,8 +278,8 @@
             console.log('showDomain caught with', domains);
 
             // query Things contained in Conceptcluster
-            this.schema.byUris(domains.map(d => d.uri)).then(function (graph) {
-                that.showGraph(graph);
+            this.schema.byUris(domains.map(d => d.uri)).then(graph => {
+                this.showGraph(graph);
             });
         };
 
@@ -288,9 +288,9 @@
          * @returns {Array|*|{Artefact}}
          */
         this.getSelectedConcepts = function () {
-            return d3.selectAll(`.${class_selected_concept}`).data().map(function (d) {
-                return Object.assign(that.schema.fromJsonld(d.data),{
-                    sourceGraph: that.graph.id
+            return d3.selectAll(`.${class_selected_concept}`).data().map(d => {
+                return Object.assign(this.schema.fromJsonld(d.data), {
+                    sourceGraph: this.graph.id
                 });
             })
         };
