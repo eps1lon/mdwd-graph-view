@@ -36,7 +36,7 @@
         const linksEqual = function (l1, l2) {
             return (l1.source == l2.source && l1.target == l2.target)
                 || (l1.source == l2.target && l1.target == l2.source)
-        }
+        };
 
         /**
          * callback thats executed when the user clicks a node
@@ -133,11 +133,11 @@
                     k: 1 / d3_transform.k,
                     x: -d3_transform.x,
                     y: -d3_transform.y
-                }
+                };
 
                 // and reverse the operations!
                 return `scale(${inverted.k}) translate(${inverted.x} ${inverted.y}) `;
-            }
+            };
 
             // zooming
             svg.call(minimapZoom);

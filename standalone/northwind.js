@@ -4,7 +4,7 @@
     const DEFAULTS = {
         'uri': 'defaultURI',
         'string': 'defaultString'
-    }
+    };
 
     // northwind abox to schema
     window.northwind = new SchemaFactory({
@@ -33,9 +33,8 @@
              * @returns {*}
              */
             'build': function (schema, data) {
-                var that = this
-                schema.uri = data['@id']
-                schema.type = data['@type']
+                schema.uri = data['@id'];
+                schema.type = data['@type'];
 
                 schema.label = data['nw:hasTitle'] || `instance of ${schema.type} is not a Thing`;
 
@@ -55,7 +54,6 @@
             },
             'EXTENDS': 'Artefact',
             'build': function (schema, data) {
-                var that = this
                 schema.name = data['ia:hasClusterID'];
                 schema.label = data['rdfs:label']['@value'];
                 schema.concepts = data['ia:containsIndividual'];
@@ -85,7 +83,7 @@
             },
             'EXTENDS': 'Artefact',
             'build': function (schema, jsonld) {
-                console.log('TODO Contact', schema, jsonld)
+                console.log('TODO Contact', schema, jsonld);
 
                 return schema
             }
@@ -97,8 +95,8 @@
                 'individuals': []
             },
             'EXTENDS': 'Artefact',
-            'build': function (schema, jsonld) {
-                console.warn("Klass.build not implemented")
+            'build': function (schema) {
+                console.warn("Klass.build not implemented");
 
                 return schema
             }
@@ -106,9 +104,9 @@
     }, function (jsonld) {
         switch (jsonld['@type']) {
             case 'ia:ConceptCluster':
-                return 'ConceptCluster'
+                return 'ConceptCluster';
             case 'ia:Document':
-                return 'Document'
+                return 'Document';
             case 'nw:Contact':
                 return 'Contact'
 
@@ -116,4 +114,4 @@
 
         return 'Artefact'
     })
-})(this)
+})(this);
