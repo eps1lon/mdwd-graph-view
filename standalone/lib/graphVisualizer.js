@@ -139,8 +139,8 @@
                 return `scale(${inverted.k}) translate(${inverted.x} ${inverted.y}) `;
             };
 
-            // zooming
-            svg.call(minimapZoom);
+            // zooming ignore dbclick zoom
+            svg.call(minimapZoom).on("dblclick.zoom", null);
 
             // inverse to svg.zoom
             d3.select(`#${$minimap.attr("id")}`).call(d3.zoom()
