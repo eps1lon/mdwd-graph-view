@@ -85,8 +85,6 @@
             $graph = $(`#${this.generateId('domainGraph')}`, this.$dom);
             $graphLegend = $(`#${this.generateId('graphLegend')}`, this.$dom);
 
-            console.log($minimap, $graph, $graphLegend)
-
             $('h2', $graphLegend).click(function () {
                 $('dl', $graphLegend).toggle();
             });
@@ -118,17 +116,8 @@
                     minimap.attr("transform", invertTransform(transform));
                 });
 
-            $(`#${this.generateId('graphFocus')}`, this.$dom).click(function () {
-                const nodes = g.selectAll(`.${class_selected_concept}`);
-
-                console.log(nodes);
-
-                const x = 20;
-                const y = 20;
-                const scale = 1;
-                const translate = [width / 2 - scale * x, height / 2 - scale * y];
-
-                g.attr("transform", `translate(${x} ${y}) scale(${scale})`);
+            $(`#${this.generateId('graphFocus')}`, this.$dom).click(() => {
+                console.warn('hell no. try computing a transformation that considers the current transformation and takes the center...')
             });
 
             const invertTransform = function (d3_transform) {
