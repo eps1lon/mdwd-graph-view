@@ -48,16 +48,6 @@
                 .trigger('change');//*/
 
         });
-
-        // northwind graph TODO testing
-        //$('#search').text('Anzeige von Objekten mit Typ x und assoziierten dokumente')
-        aboxQuery([{
-            "@embed": "@always",
-            //"@type": "nw:OrderDetails",
-            "@id": "nwa:OrderDetails0"
-        }]).then(graph => {
-            //graph_vis.showGraph(graph)
-        })
     })
 
 })(this);
