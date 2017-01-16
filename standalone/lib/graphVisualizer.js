@@ -262,7 +262,7 @@
             console.log('showDomain caught with', domains);
 
             // query Things contained in Conceptcluster
-            northwind.byUris(domains.map(d => d.uri)).then(function (graph) {
+            this.schema.byUris(domains.map(d => d.uri)).then(function (graph) {
                 that.showGraph(graph);
             });
         };
