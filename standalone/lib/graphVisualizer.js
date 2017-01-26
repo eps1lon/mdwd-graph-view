@@ -4,6 +4,14 @@
     const aboxQuery = window.aboxQuery;
 
     /**
+     * calculates the avg of a list
+     *
+     * @param {number} l list of types that can be added and divided
+     *                 numbers make the most sense
+     */
+    const avg = l => l.length ? l.reduce((s, n) => s + n, 0) / l.length : 0;
+
+    /**
      * undirected
      * @param l1
      * @param l2
@@ -58,7 +66,7 @@
             that.conceptsSelected();
         };
 
-        // some private const for d3
+        // some private vars for d3
         let width
             , height
             , simulation
@@ -116,8 +124,54 @@
                     minimap.attr("transform", invertTransform(transform));
                 });
 
-            $(`#${this.generateId('graphFocus')}`, this.$dom).click(() => {
-                console.warn('hell no. try computing a transformation that considers the current transformation and takes the center...')
+            /*
+             * zoom the graph to view all selected concepts
+             *
+             * if no nodes are selected the center of the svg (not graph)
+             * is chosen
+             *
+             * if only one node is selected the hole graph will be visible
+             *
+             * zoom is called in a transition over 1s
+             */
+            $(`#${this.generateId('graphFocus')}`, this.$dom).click(function () {
+                const [X, Y] = [[], []];
+
+                d3.selectAll(`.${class_selected_concept}`).each(d => {
+                    X.push(d.x);
+                    Y.push(d.y);
+                });
+
+                if (X.length == 0) {
+                    // default to center
+                    X.push(width / 2);
+                    Y.push(height / 2);
+                }
+
+                const focus = {
+                    x: -avg(X),
+                    y: -avg(Y),
+                    width: Math.max(...X) - Math.min(...X),
+                    height: Math.max(...Y) - Math.min(...Y),
+                    k: 1
+                };
+
+                if (X.length > 1) {
+                    focus.k = Math.min(width / focus.width,
+                                       height / focus.height);
+                }
+
+                // this can be simplified by matrix multiplication
+                let focus_transform
+                    = d3.zoomIdentity
+                    .translate(width / 2, height / 2)
+                    // add a little margin by zooming out a bit
+                    .scale(focus.k / 2)
+                    .translate(focus.x, focus.y);
+
+                svg.transition()
+                    .duration(1000)
+                    .call(minimapZoom.transform, focus_transform);
             });
 
             const invertTransform = function (d3_transform) {
