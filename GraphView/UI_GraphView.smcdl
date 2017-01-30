@@ -1,46 +1,84 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<component xmlns="http://mmt.inf.tu-dresden.de/smcdl/1.15" xmlns:ns2="http://mmt.inf.tu-dresden.de/smcdl/1.15/metadata" xmlns:ns3="de.tudresden.mmt.inf.smcdl" id="https://svn.mmt.inf.tu-dresden.de/repositories/CRUISe/components/trunk/UI_GraphViewTODO/" name="GraphView" isUI="true">
-    <ns2:metadata>
-        <ns2:keywords>
-            <ns2:keyword>GraphView</ns2:keyword>
-        </ns2:keywords>
-    </ns2:metadata>
+<component xmlns="http://mmt.inf.tu-dresden.de/smcdl/1.15" 
+	id="http://mmt.inf.tu-dresden.de/EDYRA/prototype/GraphView" 
+	version="1.0" 
+	isUI="true"
+	xmlns:nfp="http://mmt.inf.tu-dresden.de/models/nfp.owl#" 
+	xmlns:mcdl="http://mmt.inf.tu-dresden.de/models/mcdl.owl#" 
+	xmlns:travel="http://mmt.inf.tu-dresden.de/cruise/travel.owl#"
+	xmlns:upperactions="http://mmt.inf.tu-dresden.de/models/activity-actions.owl#" 
+	xmlns:edyraactions="http://mmt.inf.tu-dresden.de/models/activity-edyraactions.owl#"
+	xmlns:infoapp="http://mmt.inf.tu-dresden.de/infoapp#">
+    <metadata xmlns="http://mmt.inf.tu-dresden.de/smcdl/1.15/metadata">
+        <keywords>
+            <keyword>GraphView</keyword>
+            <keyword>Graph</keyword>
+        </keywords>
+    </metadata>
+    <documentation>This UI component allows for fancy graphical visualization of data in D3-modelled force-directed tree graph.</documentation>
+    <pricing>
+		<absolutePrice currency="nfp:EUR" value="1000000.00" />
+	</pricing>
+	<energy consumption="nfp:Low" />
+	<screenshots>
+	<!-- TODO: add screenshot, maybe also add icon -> see documentview.smcdl -->
+		<screenshot url="http://mashup.mmt.inf.tu-dresden.de:7331/res/1.12/components/UI_EventEditor/EventEditor_Screenshot.png">
+			<documentation>screenshot</documentation>
+		</screenshot>
+	</screenshots>
+	<dimensions>
+		<min width="1152" height="760" />
+		<max width="1280" height="853" />
+	</dimensions>
     <requirements>
         <runtimes>
-            <runtime id="TSR" version="1.14"/>
-        </runtimes>
+			<runtime id="TSR" version=">=1.8" />
+		</runtimes>
     </requirements>
     <interface>
-        <property xmlns:ns4="http://mmt.inf.tu-dresden.de/models/mcdl.owl#" name="height" required="true" type="ns4:hasHeight">
-        	<default>300</default>
-        </property>
-        <property xmlns:ns4="http://mmt.inf.tu-dresden.de/models/mcdl.owl#" name="width" required="true" type="ns4:hasWidth">
-        	<default>300</default>
-        </property>
-        <property xmlns:ns4="http://mmt.inf.tu-dresden.de/models/mcdl.owl#" name="title" required="true" type="ns4:hasTitle">
-            <default xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xs="http://www.w3.org/2001/XMLSchema" xsi:type="xs:string">GraphView</default>
-        </property>
-        <operation name="showDomain">
-        	<parameter name="domains" type="infoapp:ConceptCluster" isCollection="true"></parameter>
-        </operation>
-        <operation name="showSubgraph">
-        	<parameter name="concepts" type="infoapp:Artefact" isCollection="true"></parameter>
-        </operation>
+        <property type="mcdl:hasTitle" required="true" name="title">
+			<default>GraphView</default>
+		</property>
+		<property type="mcdl:hasWidth" required="true" name="width">
+			<default>1152</default>
+		</property>
+		<property type="mcdl:hasHeight" required="true" name="height">
+			<default>760</default>
+		</property>
         <event name="graphChanged">
         	<parameter name="graph" type="infoapp:Graph"></parameter>
         </event>
         <event name="conceptsChanged">
         	<parameter name="concepts" type="infoapp:Artefact" isCollection="true"></parameter>
         </event>
+        <operation name="showDomain">
+        	<parameter name="domains" type="infoapp:ConceptCluster" isCollection="true"></parameter>
+        </operation>
     </interface>
     <binding bindingtype="mapping_simplewrapper">
         <dependencies>
-            <ns4:dependency xmlns:ns4="http://mmt.inf.tu-dresden.de/smcdl/1.15" xmlns="" language="javascript">
-                <ns4:url>http://localhost:8080/UI_GraphView/UI_GraphView.js</ns4:url>
-            </ns4:dependency>
+            <dependency xmlns:ns4="http://mmt.inf.tu-dresden.de/smcdl/1.15" xmlns="" language="javascript">
+                <ns4:url>http://localhost:8087/UI_GraphView/UI_GraphView.js</ns4:url><!-- TODO: change when installing -->
+            </dependency>
+            <!-- EXT JS -->
+            <dependency language="css">
+				<url>https://cdnjs.cloudflare.com/ajax/libs/extjs/3.4.1-1/resources/css/ext-all.css</url>
+			</dependency>
+			<dependency language="javascript">
+				<url>https://cdnjs.cloudflare.com/ajax/libs/extjs/3.4.1-1/adapter/ext/ext-base.js</url>
+			</dependency>
+			<dependency language="javascript">
+				<url>https://cdnjs.cloudflare.com/ajax/libs/extjs/3.4.1-1/ext-all.js</url>
+			</dependency>
+			<dependency language="javascript">
+				<url>http://localhost:8087/csr-client/components/mdwd-graph-view/documentview.js</url>
+			</dependency>
+			<dependency language="css">
+				<url>https://cdnjs.cloudflare.com/ajax/libs/extjs/3.4.1-1/resources/css/ext-all.css</url>
+			</dependency>
         </dependencies>
         <constructor>
-            <code>new GraphView()</code>
+            <code>new EDYRA.components.GraphView();</code>
         </constructor>
     </binding>
 </component>
