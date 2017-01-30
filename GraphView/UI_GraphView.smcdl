@@ -20,12 +20,12 @@
 		<absolutePrice currency="nfp:EUR" value="1000000.00" />
 	</pricing>
 	<energy consumption="nfp:Low" />
+	<!-- TODO: add screenshot, maybe also add icon -> see documentview.smcdl
 	<screenshots>
-	<!-- TODO: add screenshot, maybe also add icon -> see documentview.smcdl -->
 		<screenshot url="http://mashup.mmt.inf.tu-dresden.de:7331/res/1.12/components/UI_EventEditor/EventEditor_Screenshot.png">
 			<documentation>screenshot</documentation>
 		</screenshot>
-	</screenshots>
+	</screenshots>-->
 	<dimensions>
 		<min width="1152" height="760" />
 		<max width="1280" height="853" />
@@ -56,10 +56,7 @@
         </operation>
     </interface>
     <binding bindingtype="mapping_simplewrapper">
-        <dependencies>
-            <dependency xmlns:ns4="http://mmt.inf.tu-dresden.de/smcdl/1.15" xmlns="" language="javascript">
-                <ns4:url>http://localhost:8087/UI_GraphView/UI_GraphView.js</ns4:url><!-- TODO: change when installing -->
-            </dependency>
+        <dependencies> 
             <!-- EXT JS -->
             <dependency language="css">
 				<url>https://cdnjs.cloudflare.com/ajax/libs/extjs/3.4.1-1/resources/css/ext-all.css</url>
@@ -70,11 +67,35 @@
 			<dependency language="javascript">
 				<url>https://cdnjs.cloudflare.com/ajax/libs/extjs/3.4.1-1/ext-all.js</url>
 			</dependency>
-			<dependency language="javascript">
-				<url>http://localhost:8087/csr-client/components/mdwd-graph-view/documentview.js</url>
+			
+			<!-- library dependecies for this component -->
+			<dependency language="css"><!-- TODO: change port if you have other properties or folder structure respectively -->
+				<url>http://localhost:8087/csr-client/components/mdwd-graph-view/GraphView/css/graphVisualizer.css</url>
 			</dependency>
-			<dependency language="css">
-				<url>https://cdnjs.cloudflare.com/ajax/libs/extjs/3.4.1-1/resources/css/ext-all.css</url>
+			<dependency language="json"><!-- TODO: change port if you have other properties or folder structure respectively -->
+				<url>http://localhost:8087/csr-client/components/mdwd-graph-view/GraphView/data/northwind-abox.json</url>
+			</dependency>
+			<!-- adjust all the dependencies below too, if your port/folder structure differs -->
+			<dependency language="javascript"><!-- TODO: change port if you have other properties or folder structure respectively -->
+				<url>http://localhost:8087/csr-client/components/mdwd-graph-view/GraphView/UI_GraphView_tryOut.js</url>
+			</dependency>
+			<dependency language="javascript">
+				<url>http://localhost:8087/csr-client/components/mdwd-graph-view/GraphView/lib/abox_query.js</url>
+			</dependency>
+			<dependency language="javascript">
+				<url>http://localhost:8087/csr-client/components/mdwd-graph-view/GraphView/lib/northwind.js</url>
+			</dependency>
+			<dependency language="javascript">
+				<url>http://localhost:8087/csr-client/components/mdwd-graph-view/GraphView/lib/SchemaFactory.js</url>
+			</dependency>
+			<dependency language="javascript">
+				<url>http://localhost:8087/csr-client/components/mdwd-graph-view/GraphView/lib/ext/d3.v4.min.js</url>
+			</dependency>
+			<dependency language="javascript">
+				<url>http://localhost:8087/csr-client/components/mdwd-graph-view/GraphView/lib/ext/jquery-3.1.1.min.js</url>
+			</dependency>
+			<dependency language="javascript">
+				<url>http://localhost:8087/csr-client/components/mdwd-graph-view/GraphView/lib/ext/jsonld.js</url>
 			</dependency>
         </dependencies>
         <constructor>
