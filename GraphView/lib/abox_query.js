@@ -31,6 +31,8 @@
      * @returns {Promise}
      */
     window.aboxQuery = function (query_graph) {
+    	console.warn('jsonld api broken in component context. use static json ld graphs');
+    	
         return new Promise(function (fulfill, reject) {
             const query = {
                 "@context": ABOX_CONTEXT,

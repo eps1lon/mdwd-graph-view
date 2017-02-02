@@ -28,6 +28,9 @@ const radius = function (d) {
     return 10;
 };
 
+const example_graph = $.getJSON("http://localhost:8080/csr-client/components/mdwd/GraphView/data/example_graph.json");
+const example_statements = $.getJSON("http://localhost:8080/csr-client/components/mdwd/GraphView/data/example_statements.json");
+
 /**
  * css className for a selected concept
  * @type {string}
@@ -62,6 +65,7 @@ EDYRA.components.GraphView= Ext.extend(Object, {
 	g: undefined, // svg group
 	graph: undefined, // jsonld graph
 	schema: undefined, // a SchemaFactory
+    color: undefined, // d3 colorization
 	hookEventListeners: function () {
 		const that = this;
 		
@@ -146,6 +150,10 @@ EDYRA.components.GraphView= Ext.extend(Object, {
         
         this.schema = northwind; // dev helper, should come from the ctx
 		
+        this.color = d3.scaleOrdinal(d3.schemeCategory20);
+
+        this.statements = example_statements;
+        /* TODO broken jsonld api
 		this.statements = new Promise(function (fulfill) {
 			const domains = window.northwind.byType('ia:ConceptCluster');
 			
@@ -160,7 +168,7 @@ EDYRA.components.GraphView= Ext.extend(Object, {
 	                };
 	            }));
 	        });
-	    });
+	    });*/
 	},
 	componentDidMount: function () {
 		const that = this;
@@ -222,13 +230,15 @@ EDYRA.components.GraphView= Ext.extend(Object, {
     },
     // operation
     showGraph: function (graph) {
+        const that = this;
+        
         this.graph = graph;
         const d3_graph = this.parseGraphD3(graph.content);
 
         // relevance is used in forceLink.distance
         // and link svg elem creation as stroke witdh
 
-        console.log('showgraph',graph, d3_graph);
+        console.warn('showgraph',graph, d3_graph);
 
         // start new sim
         this.simulation = d3.forceSimulation()
@@ -236,12 +246,12 @@ EDYRA.components.GraphView= Ext.extend(Object, {
                 .id(function(d) { return d.id; })
                 .distance(l => l.value))
             .force("charge", d3.forceManyBody())
-            .force("center", d3.forceCenter(width / 2, height / 2));
+            .force("center", d3.forceCenter(this.width / 2, this.height / 2));
 
         // clear
         this.g.selectAll('*').remove();
 
-        statements.then(statements => {
+        this.statements.then(statements => {
             const nodes = d3_graph.nodes;
             const links = d3_graph.links;
 
@@ -255,7 +265,7 @@ EDYRA.components.GraphView= Ext.extend(Object, {
                 }
             }
 
-            const link = g.append("g")
+            const link =this.g.append("g")
                 .attr("id", this.generateId('d3-links'))
                 .selectAll("line")
                 .data(links)
@@ -266,18 +276,21 @@ EDYRA.components.GraphView= Ext.extend(Object, {
                 });
 
             // nodes
-            const node = g.append("g")
+            const node = this.g.append("g")
                 .attr("id", this.generateId('d3-nodes'))
                 .selectAll("circle")
                 .data(nodes)
                 .enter().append("circle")
                 .attr("class", "d3-node")
                 .attr("r", radius)
-                .attr("fill", function(node) {
-                    return color(node.data['@type']);
+                .attr("fill", (node) => {
+                    return this.color(node.data['@type']);
                 });
 
-            node.on("click", nodeClicked);
+            node.on("click", function () {
+                $(this).toggleClass(class_selected_concept);
+                that.conceptsSelected();
+            });
             node.append("title").text(d => this.schema.fromJsonld(d.data).label)
 
             const ticked = () => {
@@ -293,9 +306,10 @@ EDYRA.components.GraphView= Ext.extend(Object, {
 
 
                 // update minimap
-                const $nodes = $(`#${g.attr("id")}`, this.$graph);
+                const $nodes = $(`#${this.g.attr("id")}`, this.$graph);
                 const bbox = $nodes.get(0).getBBox();
 
+                //console.log(d3.select(`#${this.generateId('graphMinimap')}`))
                 d3.select(`#${this.generateId('graphMinimap')}`)
                     .attr("viewBox", [
                         bbox.x,
@@ -305,15 +319,15 @@ EDYRA.components.GraphView= Ext.extend(Object, {
                     ].join(" "));
 
                 d3.select(`#${this.generateId('minimapView')}`)
-                    .attr("width", width)
-                    .attr("height", height)
+                    .attr("width", this.width)
+                    .attr("height", this.height)
             };
 
-            simulation
+            this.simulation
                 .nodes(nodes)
                 .on("tick", ticked);
 
-            simulation.force("link")
+            this.simulation.force("link")
                 .links(links);
         })
     },
@@ -453,8 +467,8 @@ EDYRA.components.GraphView= Ext.extend(Object, {
 			</svg>
 
 			<svg id="${this.generateId('graphMinimap')}" class="d3-wrapper graphMinimap">
-				<use href="#graphVis-d3-nodes" />
-				<use href="#graphVis-d3-links" />
+				<use href="#${this.generateId('d3-nodes')}" />
+				<use href="#${this.generateId('d3-links')}" />
 				<rect id="${this.generateId('minimapView')}" class="minimapView"></rect>
 			</svg>
 			<div id="${this.generateId('graphLegend')}" class="graphLegend">
@@ -473,6 +487,11 @@ EDYRA.components.GraphView= Ext.extend(Object, {
 		div.innerHTML = html;
 		
 		this.componentDidMount();
+		
+        // TODO remove example
+		example_graph.then((jsonld) => {
+            this.showGraph(jsonld);
+		});
 	},
 	/**
 	* Obligatory method to hide the component
