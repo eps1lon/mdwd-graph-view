@@ -93,7 +93,7 @@
 				<url>http://localhost:8088/mdwd/GraphView/lib/northwind.js</url>
 			</dependency>
 			<dependency language="javascript"><!-- TODO: change port if you have other properties or folder structure respectively -->
-				<url>http://localhost:8088/mdwd/GraphView/UI_GraphView_tryOut.js</url>
+				<url>http://localhost:8088/mdwd/GraphView/UI_GraphView_port.js</url>
 			</dependency>
         </dependencies>
         <constructor>

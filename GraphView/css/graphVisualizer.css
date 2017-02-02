@@ -17,7 +17,7 @@
 }
 
 /* specific for standalone since component instance ids */
-#graphVis-domainGraph {
+.domainGraph {
     background-color: grey;
     z-index: 0;
     height: 100%;
@@ -25,59 +25,48 @@
     overflow: hidden;
 }
 
-#graphVis-domainGraph svg {
+.domainGraph svg {
     width: 100%;
     height: 100%;
 }
 
-#graphVis-graphMinimap {
+.graphMinimap {
     background-color: aquamarine;
     z-index: 1;
     height: 30%;
     width: 20%;
 }
 
-#graphVis-minimapView {
+.minimapView {
     fill: none;
     stroke: black;
 }
 
-#graphVis-graphTools {
+.graphTools {
     position: absolute;
     top: 5px;
     right: 0px;
     z-index: 2;
 }
 
-#graphVis-graphLayout {
-
-}
-
-#graphVis-graphFocus {
-
-}
-
-#graphVis-memberberries {
-}
-
-#graphVis-graphLegend {
+.graphLegend {
     position: absolute;
     top: 30%;
 }
 
-#graphVis-graphLegend h2 {
+.graphLegend h2 {
     cursor: help;
 }
 
-#graphVis-graphLegend dl {
+.graphLegend dl {
     overflow: hidden;
 }
 
-#graphVis-graphLegend dd {
+.graphLegend dd {
     float: left;
 }
 
-#graphVis-graphLegend dt {
+.graphLegend dt {
     clear: both;
     float: left;
     width: 1em;
