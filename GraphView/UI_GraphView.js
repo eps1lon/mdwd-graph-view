@@ -51,6 +51,7 @@
             aboxQuery({
                 "@type": "rdf:Statement"
             }).then((statements) => {
+            	console.warn(statements);
                 fulfill(statements.map(function (statement) {
                     return {
                         source: statement['rdf:subject']['@id'],

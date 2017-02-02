@@ -5,8 +5,8 @@
     /**
      * the json ld abox as a {Promise}
      */
-    const abox = $.getJSON('data/northwind-abox.json');
-
+    const abox_filename = 'http://localhost:8080/csr-client/components/mdwd/GraphView/data/northwind-abox.json'; // 'data/northwind-abox.json';
+    const abox = $.getJSON(abox_filename);
     /**
      * context c&p from trac
      * @type {{owl: string, dcam: string, rdf: string, dcmi: string, xml: string, xsd: string, ia: string, nw: string, nwa: string, rdfs: string, dc: string}}
@@ -38,6 +38,7 @@
             };
 
             abox.then((full_graph) => {
+            	console.warn(full_graph, query)
                 jsonld.promises.frame(full_graph, query).then(function (frame) {
                     fulfill(frame["@graph"]);
                 }, function (error) {

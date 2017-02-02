@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <component xmlns="http://mmt.inf.tu-dresden.de/smcdl/1.15" 
-	id="http://mmt.inf.tu-dresden.de/EDYRA/prototype/GraphView" 
+	id="http://mmt.inf.tu-dresden.de/EDYRA/prototype/UI_GraphView2" 
+	name="UI_GraphView2"
 	version="1.0" 
 	isUI="true"
 	xmlns:nfp="http://mmt.inf.tu-dresden.de/models/nfp.owl#" 
@@ -14,22 +15,22 @@
             <keyword>GraphView</keyword>
             <keyword>Graph</keyword>
         </keywords>
+	    <documentation>This UI component allows for fancy graphical visualization of data in D3-modelled force-directed tree graph.</documentation>
+	    <pricing>
+			<absolutePrice currency="nfp:EUR" value="1000000.00" />
+		</pricing>
+		<energy consumption="nfp:Low" />
+		<!-- TODO: add screenshot, maybe also add icon -> see documentview.smcdl
+		<screenshots>
+			<screenshot url="http://mashup.mmt.inf.tu-dresden.de:7331/res/1.12/components/UI_EventEditor/EventEditor_Screenshot.png">
+				<documentation>screenshot</documentation>
+			</screenshot>
+		</screenshots>-->
+		<dimensions>
+			<min width="1152" height="760" />
+			<max width="1280" height="853" />
+		</dimensions>
     </metadata>
-    <documentation>This UI component allows for fancy graphical visualization of data in D3-modelled force-directed tree graph.</documentation>
-    <pricing>
-		<absolutePrice currency="nfp:EUR" value="1000000.00" />
-	</pricing>
-	<energy consumption="nfp:Low" />
-	<!-- TODO: add screenshot, maybe also add icon -> see documentview.smcdl
-	<screenshots>
-		<screenshot url="http://mashup.mmt.inf.tu-dresden.de:7331/res/1.12/components/UI_EventEditor/EventEditor_Screenshot.png">
-			<documentation>screenshot</documentation>
-		</screenshot>
-	</screenshots>-->
-	<dimensions>
-		<min width="1152" height="760" />
-		<max width="1280" height="853" />
-	</dimensions>
     <requirements>
         <runtimes>
 			<runtime id="TSR" version=">=1.8" />
@@ -70,36 +71,35 @@
 			
 			<!-- library dependecies for this component -->
 			<dependency language="css"><!-- TODO: change port if you have other properties or folder structure respectively -->
-				<url>http://localhost:8087/csr-client/components/mdwd-graph-view/GraphView/css/graphVisualizer.css</url>
-			</dependency>
-			<dependency language="json"><!-- TODO: change port if you have other properties or folder structure respectively -->
-				<url>http://localhost:8087/csr-client/components/mdwd-graph-view/GraphView/data/northwind-abox.json</url>
+				<url>http://localhost:8088/mdwd/GraphView/css/graphVisualizer.css</url>
 			</dependency>
 			<!-- adjust all the dependencies below too, if your port/folder structure differs -->
+			<dependency language="javascript">
+				<url>http://localhost:8088/mdwd/GraphView/lib/ext/d3.v4.min.js</url>
+			</dependency>
+			<dependency language="javascript">
+				<url>http://localhost:8088/mdwd/GraphView/lib/ext/jquery-3.1.1.min.js</url>
+			</dependency>
+			<dependency language="javascript">
+				<url>http://localhost:8088/mdwd/GraphView/lib/ext/jsonld.js</url>
+			</dependency>
+			<dependency language="javascript">
+				<url>http://localhost:8088/mdwd/GraphView/lib/abox_query.js</url>
+			</dependency>
+			<dependency language="javascript">
+				<url>http://localhost:8088/mdwd/GraphView/lib/SchemaFactory.js</url>
+			</dependency>
+			<dependency language="javascript">
+				<url>http://localhost:8088/mdwd/GraphView/lib/northwind.js</url>
+			</dependency>
 			<dependency language="javascript"><!-- TODO: change port if you have other properties or folder structure respectively -->
-				<url>http://localhost:8087/csr-client/components/mdwd-graph-view/GraphView/UI_GraphView_tryOut.js</url>
-			</dependency>
-			<dependency language="javascript">
-				<url>http://localhost:8087/csr-client/components/mdwd-graph-view/GraphView/lib/abox_query.js</url>
-			</dependency>
-			<dependency language="javascript">
-				<url>http://localhost:8087/csr-client/components/mdwd-graph-view/GraphView/lib/northwind.js</url>
-			</dependency>
-			<dependency language="javascript">
-				<url>http://localhost:8087/csr-client/components/mdwd-graph-view/GraphView/lib/SchemaFactory.js</url>
-			</dependency>
-			<dependency language="javascript">
-				<url>http://localhost:8087/csr-client/components/mdwd-graph-view/GraphView/lib/ext/d3.v4.min.js</url>
-			</dependency>
-			<dependency language="javascript">
-				<url>http://localhost:8087/csr-client/components/mdwd-graph-view/GraphView/lib/ext/jquery-3.1.1.min.js</url>
-			</dependency>
-			<dependency language="javascript">
-				<url>http://localhost:8087/csr-client/components/mdwd-graph-view/GraphView/lib/ext/jsonld.js</url>
+				<url>http://localhost:8088/mdwd/GraphView/UI_GraphView_tryOut.js</url>
 			</dependency>
         </dependencies>
         <constructor>
-            <code>new EDYRA.components.GraphView();</code>
+            <code>
+            	new EDYRA.components.GraphView();
+           	</code>
         </constructor>
     </binding>
 </component>

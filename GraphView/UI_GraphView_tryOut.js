@@ -1,6 +1,43 @@
+/* util */
+/**
+ * calculates the avg of a list
+ *
+ * @param {number} l list of types that can be added and divided
+ *                 numbers make the most sense
+ */
+const avg = l => l.length ? l.reduce((s, n) => s + n, 0) / l.length : 0;
+
+/**
+ * undirected
+ * @param l1
+ * @param l2
+ */
+const linksEqual = function (l1, l2) {
+    return (l1.source == l2.source && l1.target == l2.target)
+        || (l1.source == l2.target && l1.target == l2.source)
+};
+
+/**
+ * callback for d3 to determine radius
+ * can be a number
+ */
+const radius = function (d) {
+    if (d.data['@type   '] == "ia:Document") {
+        return 5;
+    }
+    return 10;
+};
+
+/**
+ * css className for a selected concept
+ * @type {string}
+ */
+const class_selected_concept = "selected-concept";
+
 Ext.namespace("EDYRA.components");
 
 EDYRA.components.GraphView= Ext.extend(Object, {
+	// 
 	title: null,
 	panel: null,
 	dateSelect: null,
@@ -12,6 +49,8 @@ EDYRA.components.GraphView= Ext.extend(Object, {
 	event: null,
 	updateNecessary: false,
 	renderID: null,
+	// class
+	statements: undefined,
 	/**
 	* Initiate the component
 	* Store the necessary context parameters as component properties
@@ -24,7 +63,23 @@ EDYRA.components.GraphView= Ext.extend(Object, {
 	*/
 	init: function(ctx) {
 		this.renderID = ctx.renderTargetId;
-		console.log("Init with id: ", this.renderID);
+		console.warn("Init with id: ", this.renderID);
+		
+		this.statements = new Promise(function (fulfill) {
+			const domains = window.northwind.byType('ia:ConceptCluster');
+			
+	        aboxQuery({
+	            "@type": "rdf:Statement"
+	        }).then((statements) => {
+	            fulfill(statements.map(function (statement) {
+	                return {
+	                    source: statement['rdf:subject']['@id'],
+	                    target: statement['rdf:object']['@id'],
+	                    value: statement['ia:hasWeight'] * 100 | 0
+	                };
+	            }));
+	        });
+	    });
 	},
 
 	
@@ -140,7 +195,7 @@ EDYRA.components.GraphView= Ext.extend(Object, {
 	setTitle: function(value){
         this.title = "Detailcomponent";
 	},
-	//ermöglicht die Komponentendarstellung
+	//ermï¿½glicht die Komponentendarstellung
 	setProperty: function(propName, propValue) {
 		console.log("Document prop: ", propName, propValue);
 		if (propName == 'width') {
@@ -153,7 +208,7 @@ EDYRA.components.GraphView= Ext.extend(Object, {
 			this.title= propValue;
 		}
 	},
-    //ermöglicht die Komponentendarstellung
+    //ermï¿½glicht die Komponentendarstellung
 	getProperty: function(propName) {
 		if (propName == 'width') {
 			return this.width;
