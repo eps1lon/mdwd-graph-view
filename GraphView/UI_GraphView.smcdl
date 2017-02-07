@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <component xmlns="http://mmt.inf.tu-dresden.de/smcdl/1.15" 
 	id="http://mmt.inf.tu-dresden.de/EDYRA/prototype/UI_GraphView2" 
-	name="UI_GraphView2"
+	name="UI_GraphView"
 	version="1.0" 
 	isUI="true"
 	xmlns:nfp="http://mmt.inf.tu-dresden.de/models/nfp.owl#" 
@@ -55,6 +55,9 @@
         <operation name="showDomain">
         	<parameter name="domains" type="infoapp:ConceptCluster" isCollection="true"></parameter>
         </operation>
+        <operation name="showDomain">
+        	<parameter name="domains" type="infoapp:Graph"></parameter>
+        </operation>
     </interface>
     <binding bindingtype="mapping_simplewrapper">
         <dependencies> 
@@ -93,7 +96,7 @@
 				<url>http://localhost:8088/mdwd/GraphView/lib/northwind.js</url>
 			</dependency>
 			<dependency language="javascript"><!-- TODO: change port if you have other properties or folder structure respectively -->
-				<url>http://localhost:8088/mdwd/GraphView/UI_GraphView_port.js</url>
+				<url>http://localhost:8088/mdwd/GraphView/UI_GraphView.js</url>
 			</dependency>
         </dependencies>
         <constructor>

@@ -1,440 +1,538 @@
+/* util */
 /**
- * TODO html
- * TODO transform changehandles to dispatch
+ * calculates the avg of a list
+ *
+ * @param {number} l list of types that can be added and divided
+ *                 numbers make the most sense
  */
-(function () {
-    const $ = window.jQuery;
+const avg = l => l.length ? l.reduce((s, n) => s + n, 0) / l.length : 0;
 
-    const aboxQuery = window.aboxQuery;
+const ucfirst = s => s.length ? s[0].toUpperCase() + s.slice(1) : '';
 
-    /**
-     * calculates the avg of a list
-     *
-     * @param {number} l list of types that can be added and divided
-     *                 numbers make the most sense
-     */
-    const avg = l => l.length ? l.reduce((s, n) => s + n, 0) / l.length : 0;
+/**
+ * undirected
+ * @param l1
+ * @param l2
+ */
+const linksEqual = function (l1, l2) {
+    return (l1.source == l2.source && l1.target == l2.target)
+        || (l1.source == l2.target && l1.target == l2.source)
+};
 
-    /**
-     * undirected
-     * @param l1
-     * @param l2
-     */
-    const linksEqual = function (l1, l2) {
-        return (l1.source == l2.source && l1.target == l2.target)
-            || (l1.source == l2.target && l1.target == l2.source)
-    };
+/**
+ * callback for d3 to determine radius
+ * can be a number
+ */
+const radius = function (d) {
+    if (d.data['@type   '] == "ia:Document") {
+        return 5;
+    }
+    return 10;
+};
 
-    /**
-     * callback for d3 to determine radius
-     * can be a number
-     */
-    const radius = function (d) {
-        if (d.data['@type   '] == "ia:Document") {
-            return 5;
-        }
-        return 10;
-    };
+const example_graph = $.getJSON("http://localhost:8080/csr-client/components/mdwd/GraphView/data/example_graph.json");
+const example_statements = $.getJSON("http://localhost:8080/csr-client/components/mdwd/GraphView/data/example_statements.json");
 
-    /**
-     * css className for a selected concept
-     * @type {string}
-     */
-    const class_selected_concept = "selected-concept";
+/**
+ * css className for a selected concept
+ * @type {string}
+ */
+const class_selected_concept = "selected-concept";
 
-    window.GraphVisualizer = function () {
-        const that = this;
+Ext.namespace("EDYRA.components");
 
-        const concepts_selected_listeners = [];
+const naive_props = ['width', 'height', 'title'];
 
-        const statements = new Promise(function (fulfill) {
-            aboxQuery({
-                "@type": "rdf:Statement"
-            }).then((statements) => {
-            	console.warn(statements);
-                fulfill(statements.map(function (statement) {
-                    return {
-                        source: statement['rdf:subject']['@id'],
-                        target: statement['rdf:object']['@id'],
-                        value: statement['ia:hasWeight'] * 100 | 0
-                    };
-                }));
-            });
-        });
+EDYRA.components.GraphView= Ext.extend(Object, {
+	// 
+	title: null,
+	panel: null,
+	dateSelect: null,
+	height: null,
+	width: null,
+	window: null,
+	locale: null,
+	xmlUtils: null,	
+	event: null,
+	updateNecessary: false,
+	renderID: null,
+	// class
+	log: undefined,
+	proxy: undefined,
+	statements: undefined, // relevance statements as promise
+	$minimap: undefined, // jquery obj of minimap
+	$graph: undefined, // ... of graph
+	minimapZoom: undefined, // d3 zoom behavior
+	simulation: undefined, // d3 sim
+	svg: undefined, // svg of the graph
+	g: undefined, // svg group
+	graph: undefined, // jsonld graph
+	schema: undefined, // a SchemaFactory
+    color: undefined, // d3 colorization
+	hookEventListeners: function () {
+		const that = this;
+        /*
+		 * zoom the graph to view all selected concepts
+		 *
+		 * if no nodes are selected the center of the svg (not graph)
+		 * is chosen
+		 *
+		 * if only one node is selected the hole graph will be visible
+		 *
+		 * zoom is called in a transition over 1s
+		 */
+        $(`#${this.generateId('graphFocus')}`).click(function () {
+        	console.warn('graphFocus');
+            const [X, Y] = [[], []];
 
-
-        /**
-         * callback thats executed when the user clicks a node
-         */
-        const nodeClicked = function () {
-            $(this).toggleClass(class_selected_concept);
-            that.conceptsSelected();
-        };
-
-        // some private vars for d3
-        let width
-            , height
-            , simulation
-            , svg
-            , g
-            , $minimap
-            , $graph
-            , $graphLegend;
-        let color = d3.scaleOrdinal(d3.schemeCategory20);
-
-        /**
-         *
-         * @param jquery_context
-         */
-        this.init = function (context) {
-            this.log = ctx.getAttribute('Logger');
-            this.proxy=ctx.getAttribute('EventHandler');
-
-            this.$dom = jquery_context;
-            this.schema = schema_factory;
-            this.graph = null;
-
-            this.renderTargetId  = jquery_context.attr('id');
-
-            $minimap = $(`#${this.generateId('graphMinimap')}`, this.$dom);
-            $graph = $(`#${this.generateId('domainGraph')}`, this.$dom);
-            $graphLegend = $(`#${this.generateId('graphLegend')}`, this.$dom);
-
-            $('h2', $graphLegend).click(function () {
-                $('dl', $graphLegend).toggle();
+            d3.selectAll(`.${class_selected_concept}`).each(d => {
+                X.push(d.x);
+                Y.push(d.y);
             });
 
-            $(`#${this.generateId('memberberries')}`, this.$dom).click(function () {
-                console.warn("member not supported");
-            });
+            if (X.length == 0) {
+                // default to center
+                X.push(that.width / 2);
+                Y.push(that.height / 2);
+            }
 
-            $(`#${this.generateId('graphLayout')}`, this.$dom).change(function () {
-                console.warn("layout not supported");
-            });
-
-            width = +$graph.width();
-            height = +$graph.height();
-
-            minimap = d3.select(`#${this.generateId('minimapView')}`);
-            svg = d3.select(`#${$graph.attr('id')}`);
-            g = svg.append("g").attr("id", this.generateId('d3-tree-elements'));
-
-            const scale = [1/4, 10];
-
-            const minimapZoom = d3.zoom()
-                .scaleExtent(scale)
-                .on("zoom", function () {
-                    const transform = d3.event.transform;
-
-                    g.attr("transform", transform);
-
-                    minimap.attr("transform", invertTransform(transform));
-                });
-
-			/*
-			 * zoom the graph to view all selected concepts
-			 *
-			 * if no nodes are selected the center of the svg (not graph)
-			 * is chosen
-			 *
-			 * if only one node is selected the hole graph will be visible
-			 *
-			 * zoom is called in a transition over 1s
-			 */
-            $(`#${this.generateId('graphFocus')}`, this.$dom).click(function () {
-                const [X, Y] = [[], []];
-
-                d3.selectAll(`.${class_selected_concept}`).each(d => {
-                    X.push(d.x);
-                    Y.push(d.y);
-                });
-
-                if (X.length == 0) {
-                    // default to center
-                    X.push(width / 2);
-                    Y.push(height / 2);
-                }
-
-                const focus = {
-                    x: -avg(X),
-                    y: -avg(Y),
-                    width: Math.max(...X) - Math.min(...X),
-                    height: Math.max(...Y) - Math.min(...Y),
-                    k: 1
-                };
-
-                if (X.length > 1) {
-                    focus.k = Math.min(width / focus.width,
-                        height / focus.height);
-                }
-
-                // this can be simplified by matrix multiplication
-                let focus_transform
-                    = d3.zoomIdentity
-                    .translate(width / 2, height / 2)
-                    // add a little margin by zooming out a bit
-                    .scale(focus.k / 2)
-                    .translate(focus.x, focus.y);
-
-                svg.transition()
-                    .duration(1000)
-                    .call(minimapZoom.transform, focus_transform);
-            });
-
-            const invertTransform = function (d3_transform) {
-                // invert every single operation
-                // - for translation, 1 / for scale
-                const inverted = {
-                    k: 1 / d3_transform.k,
-                    x: -d3_transform.x,
-                    y: -d3_transform.y
-                };
-
-                // and reverse the operations!
-                return `scale(${inverted.k}) translate(${inverted.x} ${inverted.y}) `;
+            const focus = {
+                x: -avg(X),
+                y: -avg(Y),
+                width: Math.max(...X) - Math.min(...X),
+                height: Math.max(...Y) - Math.min(...Y),
+                k: 1
             };
 
-            // zooming ignore dbclick zoom
-            svg.call(minimapZoom).on("dblclick.zoom", null);
+            if (X.length > 1) {
+                focus.k = Math.min(that.width / focus.width,
+                    that.height / focus.height);
+            }
+            
+            // this can be simplified by matrix multiplication
+            let focus_transform
+                = d3.zoomIdentity
+                .translate(that.width / 2, that.height / 2)
+                // add a little margin by zooming out a bit
+                .scale(focus.k / 2)
+                .translate(focus.x, focus.y);
 
-            // inverse to svg.zoom
-            d3.select(`#${$minimap.attr("id")}`).call(d3.zoom()
-                .scaleExtent(scale)
-                .on("zoom", function () {
-                    const transform = d3.event.transform;
+            that.svg.transition()
+                .duration(1000)
+                .call(that.minimapZoom.transform, focus_transform);
+        });
+	},
+	/**
+	* Initiate the component
+	* Store the necessary context parameters as component properties
+	* 
+	* @public
+	* @function
+	* @param {IContext} ctx Context object 
+	* @see https://trac.mmt.inf.tu-dresden.de/CRUISe/wiki/runtimes/api#IContext
+	* @return void
+	*/
+	init: function(ctx) {
+		this.renderID = ctx.renderTargetId;
 
-                    minimap.attr("transform", transform);
+        this.log = ctx.getAttribute('Logger');
+        this.proxy=ctx.getAttribute('EventHandler');
+        
+        this.schema = northwind; // dev helper, should come from the ctx
+		
+        this.color = d3.scaleOrdinal(d3.schemeCategory20);
 
-                    g.attr("transform", invertTransform(transform));
-                }));
+        this.statements = example_statements;
+        /* TODO broken jsonld api
+		this.statements = new Promise(function (fulfill) {
+			const domains = window.northwind.byType('ia:ConceptCluster');
+			
+	        aboxQuery({
+	            "@type": "rdf:Statement"
+	        }).then((statements) => {
+	            fulfill(statements.map(function (statement) {
+	                return {
+	                    source: statement['rdf:subject']['@id'],
+	                    target: statement['rdf:object']['@id'],
+	                    value: statement['ia:hasWeight'] * 100 | 0
+	                };
+	            }));
+	        });
+	    });*/
+	},
+	componentDidMount: function () {
+		const that = this;
+		
+		this.$minimap = $(`#${this.generateId('graphMinimap')}`);
+		this.$graph = $(`#${this.generateId('domainGraph')}`);
+		
+		this.width = +this.$graph.width();
+        this.height = +this.$graph.height();
+		
+		this.hookEventListeners();
+		
+		this.minimap = d3.select(`#${this.generateId('minimapView')}`);
+        this.svg = d3.select(`#${this.$graph.attr('id')}`);
+        this.g = this.svg.append("g").attr("id", this.generateId('d3-tree-elements'));
+        
+        const scale = [1/4, 10];
+
+        this.minimapZoom = d3.zoom()
+            .scaleExtent(scale)
+            .on("zoom", function () {
+                const transform = d3.event.transform;
+
+                that.g.attr("transform", transform);
+
+                that.minimap.attr("transform", invertTransform(transform));
+            });
+        
+        const invertTransform = function (d3_transform) {
+            // invert every single operation
+            // - for translation, 1 / for scale
+            const inverted = {
+                k: 1 / d3_transform.k,
+                x: -d3_transform.x,
+                y: -d3_transform.y
+            };
+
+            // and reverse the operations!
+            return `scale(${inverted.k}) translate(${inverted.x} ${inverted.y}) `;
         };
 
-        /**
-         * helper to generate a unique id that doesnt collide with another instance of this component
-         * @param id
-         * @returns {String}
-         */
-        this.generateId = function (id) {
-            return [this.renderTargetId, id].join('-')
-        };
+        // zooming ignore dbclick zoom
+        this.svg.call(this.minimapZoom).on("dblclick.zoom", null);
 
-        /**
-         * generates a graph from a schema
-         *
-         * @param {JsonldGraph} graph
-         */
-        this.showGraph = function (graph) {
-            this.graph = graph;
-            const d3_graph = this.parseGraphD3(graph.content);
+        // inverse to svg.zoom
+        d3.select(`#${this.$minimap.attr("id")}`).call(d3.zoom()
+            .scaleExtent(scale)
+            .on("zoom", function () {
+                const transform = d3.event.transform;
 
-            // relevance is used in forceLink.distance
-            // and link svg elem creation as stroke witdh
+                that.minimap.attr("transform", transform);
 
-            console.log('showgraph',graph, d3_graph);
+                that.g.attr("transform", invertTransform(transform));
+            }));
+	},
+	generateId: function (id) {
+        return [this.renderID, id].join('-')
+    },
+    // operation
+    showGraph: function (graph) {
+        const that = this;
+        
+        this.graph = graph;
+        this.publishGraphChanged(graph);
 
-            // start new sim
-            simulation = d3.forceSimulation()
-                .force("link", d3.forceLink()
-                    .id(function(d) { return d.id; })
-                    .distance(l => l.value))
-                .force("charge", d3.forceManyBody())
-                .force("center", d3.forceCenter(width / 2, height / 2));
+        const d3_graph = this.parseGraphD3(graph.content);
 
-            // clear
-            g.selectAll('*').remove();
+        // relevance is used in forceLink.distance
+        // and link svg elem creation as stroke witdh
 
-            statements.then(statements => {
-                const nodes = d3_graph.nodes;
-                const links = d3_graph.links;
+        console.warn('showgraph',graph, d3_graph);
 
-                // map rdf statements on links
-                // O(|statements|*|links|) :(((
-                for (const statement of statements) {
-                    for (const link of links) {
-                        if (linksEqual(link, statement)) {
-                            link.value = statement.value
-                        }
+        // start new sim
+        this.simulation = d3.forceSimulation()
+            .force("link", d3.forceLink()
+                .id(function(d) { return d.id; })
+                .distance(l => l.value))
+            .force("charge", d3.forceManyBody())
+            .force("center", d3.forceCenter(this.width / 2, this.height / 2));
+
+        // clear
+        this.g.selectAll('*').remove();
+
+        this.statements.then(statements => {
+            const nodes = d3_graph.nodes;
+            const links = d3_graph.links;
+
+            // map rdf statements on links
+            // O(|statements|*|links|) :(((
+            for (const statement of statements) {
+                for (const link of links) {
+                    if (linksEqual(link, statement)) {
+                        link.value = statement.value
                     }
                 }
+            }
 
-                const link = g.append("g")
-                    .attr("id", this.generateId('d3-links'))
-                    .selectAll("line")
-                    .data(links)
-                    .enter().append("line")
-                    .attr("class", "d3-link")
-                    .attr("stroke-width", function(d) {
-                        return d.value/10;
-                    });
-
-                // nodes
-                const node = g.append("g")
-                    .attr("id", this.generateId('d3-nodes'))
-                    .selectAll("circle")
-                    .data(nodes)
-                    .enter().append("circle")
-                    .attr("class", "d3-node")
-                    .attr("r", radius)
-                    .attr("fill", function(node) {
-                        return color(node.data['@type']);
-                    });
-
-                node.on("click", nodeClicked);
-                node.append("title").text(d => this.schema.fromJsonld(d.data).label)
-
-                const ticked = () => {
-                    link
-                        .attr("x1", d => d.source.x)
-                        .attr("y1", d => d.source.y)
-                        .attr("x2", d => d.target.x)
-                        .attr("y2", d => d.target.y);
-
-                    node
-                        .attr("cx", d => d.x)
-                        .attr("cy", d => d.y);
-
-
-                    // update minimap
-                    const $nodes = $(`#${g.attr("id")}`, $graph);
-                    const bbox = $nodes.get(0).getBBox();
-
-                    d3.select(`#${this.generateId('graphMinimap')}`)
-                        .attr("viewBox", [
-                            bbox.x,
-                            bbox.y,
-                            bbox.width,
-                            bbox.height
-                        ].join(" "));
-
-                    d3.select(`#${this.generateId('minimapView')}`)
-                        .attr("width", width)
-                        .attr("height", height)
-                };
-
-                simulation
-                    .nodes(nodes)
-                    .on("tick", ticked);
-
-                simulation.force("link")
-                    .links(links);
-            })
-        };
-
-        /**
-         *
-         * @param {Array<ConceptCluster>} domains
-         */
-        this.showDomain = function (domains) {
-            console.log('showDomain caught with', domains);
-
-            // query Things contained in Conceptcluster
-            this.schema.byUris(domains.map(d => d.uri)).then(graph => {
-                this.showGraph(graph);
-            });
-        };
-
-        /**
-         * returns the selected artefacts
-         * @returns {Array|*|{Artefact}}
-         */
-        this.getSelectedConcepts = function () {
-            return d3.selectAll(`.${class_selected_concept}`).data().map(d => {
-                return Object.assign(this.schema.fromJsonld(d.data), {
-                    sourceGraph: this.graph.id
+            const link =this.g.append("g")
+                .attr("id", this.generateId('d3-links'))
+                .selectAll("line")
+                .data(links)
+                .enter().append("line")
+                .attr("class", "d3-link")
+                .attr("stroke-width", function(d) {
+                    return d.value/10;
                 });
-            })
-        };
 
+            // nodes
+            const node = this.g.append("g")
+                .attr("id", this.generateId('d3-nodes'))
+                .selectAll("circle")
+                .data(nodes)
+                .enter().append("circle")
+                .attr("class", "d3-node")
+                .attr("r", radius)
+                .attr("fill", (node) => {
+                    return this.color(node.data['@type']);
+                });
+
+            node.on("click", function () {
+                $(this).toggleClass(class_selected_concept);
+                that.publishConceptsChange();
+            });
+            node.append("title").text(d => this.schema.fromJsonld(d.data).label)
+
+            const ticked = () => {
+                link
+                    .attr("x1", d => d.source.x)
+                    .attr("y1", d => d.source.y)
+                    .attr("x2", d => d.target.x)
+                    .attr("y2", d => d.target.y);
+
+                node
+                    .attr("cx", d => d.x)
+                    .attr("cy", d => d.y);
+
+
+                // update minimap
+                const $nodes = $(`#${this.g.attr("id")}`, this.$graph);
+                const bbox = $nodes.get(0).getBBox();
+
+                //console.log(d3.select(`#${this.generateId('graphMinimap')}`))
+                d3.select(`#${this.generateId('graphMinimap')}`)
+                    .attr("viewBox", [
+                        bbox.x,
+                        bbox.y,
+                        bbox.width,
+                        bbox.height
+                    ].join(" "));
+
+                d3.select(`#${this.generateId('minimapView')}`)
+                    .attr("width", this.width)
+                    .attr("height", this.height)
+            };
+
+            this.simulation
+                .nodes(nodes)
+                .on("tick", ticked);
+
+            this.simulation.force("link")
+                .links(links);
+        })
+    },
+    // operation
+    showDomain: function (domains) {
+        // query Things contained in Conceptcluster
+        this.schema.byUris(domains.map(d => d.uri)).then(graph => {
+            this.showGraph(graph);
+        });
+    },
+    getSelectedConcepts: function () {
+        return d3.selectAll(`${this.renderID} .${class_selected_concept}`).data().map(d => {
+            return Object.assign(this.schema.fromJsonld(d.data), {
+                sourceGraph: this.graph.id
+            });
+        })
+    },
+    parseGraphD3: function (graph_content) {
         /**
-         * fires conceptsSelected signal
+         * creates a d3 link between nodes
+         * @param n1
+         * @param n2
+         * @returns {{source: (*|string|string), target: (*|string|string), value: number}}
          */
-        this.conceptsSelected = function () {
-            const selected_concepts = this.getSelectedConcepts();
-
-            console.log('conceptsSelected fired with', selected_concepts);
-
-            for (const concepts_selected_listener of concepts_selected_listeners) {
-                concepts_selected_listener.call(this, selected_concepts);
+        const createLink = function (n1, n2) {
+            return {
+                source: n1['@id'],
+                target: n2['@id'],
+                value: 100 // thats the relevance
             }
         };
 
         /**
-         *  if u want to be signaled on conceptsSelected hook here!
-         * @param cb(concepts: []<Artefact>)
-         */
-        this.addConceptsSelectedListener = function (cb) {
-            concepts_selected_listeners.push(cb);
-        };
-
-        /**
-         * parses a jsonld graph into a d3 graph
+         * creates an array of links between every member of targets to source
          *
-         * @param {!JsonLDGraph} graph_content
+         * @param source node
+         * @param targets {Array}
          * @returns {Array}
          */
-        this.parseGraphD3 = function (graph_content) {
-            /**
-             * creates a d3 link between nodes
-             * @param n1
-             * @param n2
-             * @returns {{source: (*|string|string), target: (*|string|string), value: number}}
-             */
-            const createLink = function (n1, n2) {
-                return {
-                    source: n1['@id'],
-                    target: n2['@id'],
-                    value: 100 // thats the relevance
-                }
-            };
+        const mapLink = function (source, targets) {
+            return targets.map(target => createLink(source, target));
+        };
 
-            /**
-             * creates an array of links between every member of targets to source
-             *
-             * @param source node
-             * @param targets {Array}
-             * @returns {Array}
-             */
-            const mapLink = function (source, targets) {
-                return targets.map(target => createLink(source, target));
-            };
+        /**
+         * nodes that need to be walked
+         * queue type LIFO
+         * @type {Array}
+         */
+        const unparsed = JSON.parse(JSON.stringify(graph_content)); // clone
+        const visited = new Set();
 
-            /**
-             * nodes that need to be walked
-             * queue type LIFO
-             * @type {Array}
-             */
-            const unparsed = JSON.parse(JSON.stringify(graph_content)); // clone
-            const visited = new Set();
+        const nodes = [];
+        const links = [];
 
-            const nodes = [];
-            const links = [];
+        while (unparsed.length) {
+            const jsonld = unparsed.shift();
 
-            while (unparsed.length) {
-                const jsonld = unparsed.shift();
+            if (!visited.has(jsonld['@id']) && jsonld['@id'] !== undefined) {
+                visited.add(jsonld['@id']);
 
-                if (!visited.has(jsonld['@id']) && jsonld['@id'] !== undefined) {
-                    visited.add(jsonld['@id']);
+                const node_d3 = {
+                    id: jsonld['@id'],
+                    data: jsonld
+                };
 
-                    const node_d3 = {
-                        id: jsonld['@id'],
-                        data: jsonld
-                    };
+                nodes.push(node_d3);
 
-                    nodes.push(node_d3);
-
-                    for (const value of Object.values(jsonld)) {
-                        if ($.isArray(value)) {
-                            unparsed.push(...value);
-                            links.push(...mapLink(jsonld, value));
-                        }
+                for (const value of Object.values(jsonld)) {
+                    if ($.isArray(value)) {
+                        unparsed.push(...value);
+                        links.push(...mapLink(jsonld, value));
                     }
                 }
             }
-
-            return {
-                nodes: nodes,
-                links: links
-            };
         }
+
+        return {
+            nodes: nodes,
+            links: links
+        };
+    },
+	
+	/**
+	 * Obligatory method to dispose this UI-Component
+	 * @function
+	 * @public
+	 * @return void
+	 */
+	dispose: function(){
+	
+	},
+	/**
+	* Obligatory method to render the component, 
+	*	the multiline [es6 feature] seems to work in chrome, maybe add Babel?
+	* @function
+	* @public
+	* @return void
+	*/
+	show: function() {
+		const id = this.renderID;
+		var html = `
+					<div class="component">
+			<div id="${this.generateId('graphTools')}" class="graphTools">
+				<button id="${this.generateId('graphFocus')}" class="graphFocus">focus</button>
+			</div>
+
+
+			<svg id="${this.generateId('domainGraph')}" class="d3-wrapper domainGraph">
+
+			</svg>
+
+			<svg id="${this.generateId('graphMinimap')}" class="d3-wrapper graphMinimap">
+				<use href="#${this.generateId('d3-nodes')}" />
+				<use href="#${this.generateId('d3-links')}" />
+				<rect id="${this.generateId('minimapView')}" class="minimapView"></rect>
+			</svg>
+			<div class="tip"></div>
+		</div>
+		`;
+		
+		/* main compiling */
+		var div = document.getElementById(this.renderID);
+		div.innerHTML = html;
+		
+		this.componentDidMount();
+		
+        // TODO remove example
+		example_graph.then((jsonld) => {
+            this.showGraph(jsonld);
+		});
+	},
+	/**
+	* Obligatory method to hide the component
+	* @public
+	* @function
+	*/
+	hide: function() {
+		
+	},
+	/*
+	 SETTERs for properties
+	*/
+	//ermöglicht die Komponentendarstellung
+	setProperty: function(propName, propValue) {
+		if (naive_props.includes(propName)) {
+            const setter = `set${ucfirst(propName)}`;
+            return this[setter].call(this, propValue);
+        }
+        this.log.warn(`no setter defined for ${propName}`);
+	},
+    //ermöglicht die Komponentendarstellung
+	getProperty: function(propName) {
+		if (naive_props.includes(propName)) {
+            const getter = `get${ucfirst(propName)}`;
+            return this[getter].call(this);
+        }
+
+        this.log.warn(`no setter defined for ${propName}`);
+	},
+    getWidth: function() {
+        return this.width;
+    },
+    setWidth: function(width) {
+        if (isNaN(+width)) {
+            this.warn(`${width} not parseable`);
+            return;
+        }
+        this.width = +width;
+    },
+    getHeight: function() {
+        return this.height;
+    },
+    setHeight: function(height) {
+        if (isNaN(+height)) {
+            this.warn(`${height} not parseable`);
+            return;
+        }
+        this.height = +height;
+    },
+    getTitle: function() {
+        return this.title;
+    },
+    setTitle: function(title) {
+        this.title = title.toString();
+    },
+	invokeOperation: function(name, msg) {
+        const body = msg.getBody();
+
+		switch (name) {
+        case 'showDomain':
+            this.showDomain(body.domains);
+            break;
+        case 'showGraph':
+            this.showGraph(body.graph);
+            break;
+        default:
+            this.log.warn(`${name} operation not defined`);
+            break;
+        }
+	},
+	publishConceptsChange: function() {
+        var message = new Ext.cruise.client.Message();
+
+        message.setName('conceptsChanged');
+        message.appendToBody('concepts', this.getSelectedConcepts());
+
+        this.proxy.publish(message);
+    },
+    publishGraphChanged: function() {
+        var message = new Ext.cruise.client.Message();
+
+        message.setName('graphChanged');
+        message.appendToBody('graph', this.graph);
+
+        this.proxy.publish(message);
     }
-})();
+});
