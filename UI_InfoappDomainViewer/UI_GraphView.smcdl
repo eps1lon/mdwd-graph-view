@@ -74,29 +74,29 @@
 			
 			<!-- library dependecies for this component -->
 			<dependency language="css"><!-- TODO: change port if you have other properties or folder structure respectively -->
-				<url>http://localhost:8088/mdwd/GraphView/css/graphVisualizer.css</url>
+				<url>https://svn.mmt.inf.tu-dresden.de/repositories/CRUISe/components/trunk/UI_InfoappDomainViewer/css/graphVisualizer.css</url>
 			</dependency>
 			<!-- adjust all the dependencies below too, if your port/folder structure differs -->
 			<dependency language="javascript">
-				<url>http://localhost:8088/mdwd/GraphView/lib/ext/d3.v4.min.js</url>
+				<url>https://svn.mmt.inf.tu-dresden.de/repositories/CRUISe/components/trunk/UI_InfoappDomainViewer/lib/ext/d3.v4.min.js</url>
 			</dependency>
 			<dependency language="javascript">
-				<url>http://localhost:8088/mdwd/GraphView/lib/ext/jquery-3.1.1.min.js</url>
+				<url>https://svn.mmt.inf.tu-dresden.de/repositories/CRUISe/components/trunk/UI_InfoappDomainViewer/lib/ext/jquery-3.1.1.min.js</url>
 			</dependency>
 			<dependency language="javascript">
-				<url>http://localhost:8088/mdwd/GraphView/lib/ext/jsonld.js</url>
+				<url>https://svn.mmt.inf.tu-dresden.de/repositories/CRUISe/components/trunk/UI_InfoappDomainViewer/lib/ext/jsonld.js</url>
 			</dependency>
 			<dependency language="javascript">
-				<url>http://localhost:8088/mdwd/GraphView/lib/abox_query.js</url>
+				<url>https://svn.mmt.inf.tu-dresden.de/repositories/CRUISe/components/trunk/UI_InfoappDomainViewer/lib/abox_query.js</url>
 			</dependency>
 			<dependency language="javascript">
-				<url>http://localhost:8088/mdwd/GraphView/lib/SchemaFactory.js</url>
+				<url>https://svn.mmt.inf.tu-dresden.de/repositories/CRUISe/components/trunk/UI_InfoappDomainViewer/lib/SchemaFactory.js</url>
 			</dependency>
 			<dependency language="javascript">
-				<url>http://localhost:8088/mdwd/GraphView/lib/northwind.js</url>
+				<url>https://svn.mmt.inf.tu-dresden.de/repositories/CRUISe/components/trunk/UI_InfoappDomainViewer/lib/northwind.js</url>
 			</dependency>
 			<dependency language="javascript"><!-- TODO: change port if you have other properties or folder structure respectively -->
-				<url>http://localhost:8088/mdwd/GraphView/UI_GraphView.js</url>
+				<url>https://svn.mmt.inf.tu-dresden.de/repositories/CRUISe/components/trunk/UI_InfoappDomainViewer/UI_GraphView.js</url>
 			</dependency>
         </dependencies>
         <constructor>
