@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <component xmlns="http://mmt.inf.tu-dresden.de/smcdl/1.15" 
-	id="http://mmt.inf.tu-dresden.de/EDYRA/prototype/UI_GraphView2" 
-	name="UI_GraphView"
+	id="http://mmt.inf.tu-dresden.de/EDYRA/prototype/UI_InfoappDomainViewer" 
+	name="UI_InfoappDomainViewer"
 	version="1.0" 
 	isUI="true"
 	xmlns:nfp="http://mmt.inf.tu-dresden.de/models/nfp.owl#" 
@@ -96,12 +96,12 @@
 				<url>https://svn.mmt.inf.tu-dresden.de/repositories/CRUISe/components/trunk/UI_InfoappDomainViewer/lib/northwind.js</url>
 			</dependency>
 			<dependency language="javascript"><!-- TODO: change port if you have other properties or folder structure respectively -->
-				<url>https://svn.mmt.inf.tu-dresden.de/repositories/CRUISe/components/trunk/UI_InfoappDomainViewer/UI_GraphView.js</url>
+				<url>https://svn.mmt.inf.tu-dresden.de/repositories/CRUISe/components/trunk/UI_InfoappDomainViewer/UI_InfoappDomainViewer.js</url>
 			</dependency>
         </dependencies>
         <constructor>
             <code>
-            	new EDYRA.components.GraphView();
+            	new EDYRA.components.DomainViewer();
            	</code>
         </constructor>
     </binding>

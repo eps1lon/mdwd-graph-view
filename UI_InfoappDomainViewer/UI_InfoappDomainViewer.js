@@ -1,4 +1,15 @@
-/* util */
+/**
+ * UI_InfoappDomainViewer
+ * 
+ * abox_query > SchemaFactory > > northwind war unsere Hilfspipeline zum generieren der Daten
+ * während des Praktikums wurde nie die anfangs definierte Datenschnittstelle zur Verfügung gestellt
+ * die komponente ist so daher statisch aktuell. unter standalone befindet sich ein 
+ * funktionierendes, dynamisches Beispiel was auch die Kommunikation zwischen DomainSelector
+ * und Viewer exemplarisch emuliert
+ * 
+ * die schemafactory wird noch immer vom code verwendet bei bestimmten operation
+ * dies ist nur für beispiele noch existent. ausführen führt zu fehlern
+ */
 /**
  * calculates the avg of a list
  *
@@ -30,8 +41,8 @@ const radius = function (d) {
     return 10;
 };
 
-const example_graph = $.getJSON("http://localhost:8080/csr-client/components/mdwd/GraphView/data/example_graph.json");
-const example_statements = $.getJSON("http://localhost:8080/csr-client/components/mdwd/GraphView/data/example_statements.json");
+const example_graph = $.getJSON("http://localhost:8080/csr-client/components/mdwd/UI_InfoappDomainViewer/data/example_graph.json");
+const example_statements = $.getJSON("http://localhost:8080/csr-client/components/mdwd/UI_InfoappDomainViewer/data/example_statements.json");
 
 /**
  * css className for a selected concept
@@ -43,7 +54,7 @@ Ext.namespace("EDYRA.components");
 
 const naive_props = ['width', 'height', 'title'];
 
-EDYRA.components.GraphView= Ext.extend(Object, {
+EDYRA.components.DomainViewer = Ext.extend(Object, {
 	// 
 	title: null,
 	panel: null,
