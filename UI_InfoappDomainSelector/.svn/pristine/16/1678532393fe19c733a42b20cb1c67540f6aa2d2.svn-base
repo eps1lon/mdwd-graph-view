@@ -1,7 +1,0 @@
-input, label {
-    display: inline-block;
-}
-
-.template {
-    display: none;
-}
