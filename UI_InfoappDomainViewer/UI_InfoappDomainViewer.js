@@ -48,7 +48,7 @@ const example_statements = $.getJSON("http://localhost:8080/csr-client/component
  * css className for a selected concept
  * @type {string}
  */
-const class_selected_concept = "selected-concept";
+const CLASS_SELCTED_CONCEPT = "selected-concept";
 
 Ext.namespace("EDYRA.components");
 
@@ -96,7 +96,7 @@ EDYRA.components.DomainViewer = Ext.extend(Object, {
         	console.warn('graphFocus');
             const [X, Y] = [[], []];
 
-            d3.selectAll(`.${class_selected_concept}`).each(d => {
+            d3.selectAll(`.${CLASS_SELCTED_CONCEPT}`).each(d => {
                 X.push(d.x);
                 Y.push(d.y);
             });
@@ -237,6 +237,8 @@ EDYRA.components.DomainViewer = Ext.extend(Object, {
 
         const d3_graph = this.parseGraphD3(graph.content);
 
+        const prev_selected_concepts = this.getSelectedConcepts().map((node) => node.uri);
+
         // relevance is used in forceLink.distance
         // and link svg elem creation as stroke witdh
 
@@ -283,14 +285,22 @@ EDYRA.components.DomainViewer = Ext.extend(Object, {
                 .selectAll("circle")
                 .data(nodes)
                 .enter().append("circle")
-                .attr("class", "d3-node")
+                .attr("class", function(node) {
+                    const classes = ["d3-node"];
+
+                    if (prev_selected_concepts.includes(node.id)) {
+                        classes.push(CLASS_SELECTED_CONCEPT);
+                    }
+
+                    return classes.join(" ");
+                })
                 .attr("r", radius)
                 .attr("fill", (node) => {
                     return this.color(node.data['@type']);
                 });
 
             node.on("click", function () {
-                $(this).toggleClass(class_selected_concept);
+                $(this).toggleClass(CLASS_SELCTED_CONCEPT);
                 that.publishConceptsChange();
             });
             node.append("title").text(d => this.schema.fromJsonld(d.data).label)
@@ -341,7 +351,7 @@ EDYRA.components.DomainViewer = Ext.extend(Object, {
         });
     },
     getSelectedConcepts: function () {
-        return d3.selectAll(`${this.renderID} .${class_selected_concept}`).data().map(d => {
+        return d3.selectAll(`${this.renderID} .${CLASS_SELCTED_CONCEPT}`).data().map(d => {
             return Object.assign(this.schema.fromJsonld(d.data), {
                 sourceGraph: this.graph.id
             });
