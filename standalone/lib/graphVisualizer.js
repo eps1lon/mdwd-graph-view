@@ -36,7 +36,7 @@
      * css className for a selected concept
      * @type {string}
      */
-    const class_selected_concept = "selected-concept";
+    const CLASS_SELECTED_CONCEPT = "selected-concept";
 
     window.GraphVisualizer = function () {
         const that = this;
@@ -62,7 +62,7 @@
          * callback thats executed when the user clicks a node
          */
         const nodeClicked = function () {
-            $(this).toggleClass(class_selected_concept);
+            $(this).toggleClass(CLASS_SELECTED_CONCEPT);
             that.conceptsSelected();
         };
 
@@ -137,7 +137,7 @@
             $(`#${this.generateId('graphFocus')}`, this.$dom).click(function () {
                 const [X, Y] = [[], []];
 
-                d3.selectAll(`.${class_selected_concept}`).each(d => {
+                d3.selectAll(`.${CLASS_SELECTED_CONCEPT}`).each(d => {
                     X.push(d.x);
                     Y.push(d.y);
                 });
@@ -220,6 +220,8 @@
             this.graph = graph;
             const d3_graph = this.parseGraphD3(graph.content);
 
+            const prev_selected_concepts = this.getSelectedConcepts().map((node) => node.uri);
+
             // relevance is used in forceLink.distance
             // and link svg elem creation as stroke witdh
 
@@ -266,7 +268,15 @@
                     .selectAll("circle")
                     .data(nodes)
                     .enter().append("circle")
-                    .attr("class", "d3-node")
+                    .attr("class", function(node) {
+                        const classes = ["d3-node"];
+
+                        if (prev_selected_concepts.includes(node.id)) {
+                            classes.push(CLASS_SELECTED_CONCEPT);
+                        }
+
+                        return classes.join(" ");
+                    })
                     .attr("r", radius)
                     .attr("fill", function(node) {
                         return color(node.data['@type']);
@@ -331,7 +341,7 @@
          * @returns {Array|*|{Artefact}}
          */
         this.getSelectedConcepts = function () {
-            return d3.selectAll(`.${class_selected_concept}`).data().map(d => {
+            return d3.selectAll(`.${CLASS_SELECTED_CONCEPT}`).data().map(d => {
                 return Object.assign(this.schema.fromJsonld(d.data), {
                     sourceGraph: this.graph.id
                 });
